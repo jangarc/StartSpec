@@ -1,0 +1,122 @@
+# Design
+
+## Context
+
+綠地專案（`src/` 為空、尚無主規格），動機見 `proposal.md`。專案 `context` 約束：.NET 10、DDD 模組化單體優先（Modular Monolith first，限界上下文間僅經 ports/events 溝通）、Reqnroll BDD、前端分層（adapters/theme 之外禁止引入 `vue`/`tailwind`）、PostgreSQL 共享資料庫多租戶（以 `tenant_id` 過濾隔離）。行為契約：`specs/identity/{tenant,user-auth,authorization}/spec.md`。
+
+C4 Container 圖（c4-diagram skill 分類法，分層 Person -> System -> External）：可編輯原始檔見 `c4_iam_foundation.drawio`。
+
+```
++------------------------------------------------------------------+
+|  [Operator]                     [Platform User]                  |
+|      |                                   |                       |
+|      | manages [HTTPS]                   | signs in [HTTPS]      |
+|      v                                   v                       |
+|  +------------------------------------------------------------+  |
+|  | Enterprise Cloud Platform [Software System]                |  |
+|  |                                                            |  |
+|  |  [IAM Web App] ---> [IAM API] ---> [IAM Database]         |  |
+|  |   Vue 3+Vite         C#/NET 10      PostgreSQL             |  |
+|  |        |                ||                                   |  |
+|  |        |           events [AMQP, async]                     |  |
+|  |        v                v                                    |  |
+|  |  (AuthPort session)  [Domain Event Bus]                   |  |
+|  +------------------------------------------------------------+  |
+|      |                              |                            |
+|      v                              v                            v
+|  (future UI)              [Downstream Contexts]      [Email Service]
+|                            (External, AMQP)           (External, SMTP)
++------------------------------------------------------------------+
+```
+
+## Goals / Non-Goals
+
+**Goals（目標）：**
+
+- 單一可部署單體，其 IAM 模組未來可不經 Domain 重寫直接抽離。
+- 租戶隔離以構造保證（伺服器端解析 + 查詢過濾 + 測試），而非以約定保證。
+- 前端可替換性以建置期 import lint 證明，而非僅以資料夾名稱宣稱。
+
+**Non-Goals（非目標）：**
+
+- 本變更不做微服務拆分，不含 Kubernetes 拓撲。
+- 本地簽發器以外的 OIDC 聯邦、醫院專屬合規規則不做。
+- 消費者工作負載的讀取擴展優化（快取、唯讀複本）不做。
+
+## Decisions
+
+### 1. Hosts model with L2 module layering（Hosts 模型＋L2 模組分層）
+
+模組內分層為資料夾（L2）：`src/Modules/Iam/{Domain,Application,Infrastructure}`＋`ArchTests`，單專案每模組，分層由 NetArchTest 強制，不以多專案切分（專案爆炸否決）。模組不含 Api；外層 `Hosts.*` 按組織單位組裝（`Hosts.HQ`、`Hosts.Store`、`Hosts.Consumer`…），各自 API 面、各自部署，共用模組庫。
+
+三護欄（ArchTests 斷言，違規建置失敗）：Hosts 僅能引用 Application ports＋DTO，絕不直接碰 Domain 實體與 Infrastructure；每 use case 單一 canonical 暴露（第二 Host 薄轉接，不寫邏輯）；橫切（驗證、租戶解析、ProblemDetails、遙測）只進共用 `HostBase`。
+
+- G1 Contracts 歸 Application：Response contract 由 use case 擁有，Host 只做 HTTP 轉接（狀態碼/headers），禁自創形狀。
+- G2 判定只在 Application：enforcer 住 Application，Host 只搬運身份（claims → 調用上下文）。
+- G3 驗證分層：格式驗證在 Host（早失敗），業務規則驗證在 Application（單一真相，永不信任 Host）。
+- G4 營運：`Hosts.Migrator` 為唯一遷移執行者（固定順序、冪等；線上 Host 禁自動 migrate；按 Host 分 migrate 明確否決——migration 是資料庫 concern）；`Hosts.Dev` 一鍵全起僅開發用；`HostBase` 統一 OpenTelemetry＋tenant/store 標籤。
+
+曾考慮替代方案：第一天即微服務。否決：分散式租戶執法與分散式驗證會擋在第一個可用登入之前；Hosts 模型已把部署邊界切到組織單位，事件邊界保留後續拆分路徑，無需現在付出代價。
+
+### 2. Shared-db tenancy with `tenant_id` + global query filters（共享資料庫租戶，以 `tenant_id` + 全域查詢過濾隔離）
+
+單一資料庫，所有 IAM 實體攜帶 `tenant_id`，EF Core 全域過濾套用由身分驗證工作階段在伺服器端解析的作用中租戶（絕不單獨信任客戶端自帶標頭）。單一 migration 管線。
+
+曾考慮替代方案：每租戶一庫。暫緩：首切片不值得付出營運成本（佈建、migration 扇出）；待醫院合規要求實體隔離時再議。事件邊界使該遷移保持可行。
+
+例外：平台級 Party 身份庫不受 `tenant_id` 隔離約束，見決策 8；其跨租戶可達性僅限精確識別比對（`identity/party` spec）。
+
+### 3. Short-lived JWT access + rotating opaque refresh（短效 JWT 存取 + 輪換不透明刷新）
+
+存取權杖為無狀態 JWT（分鐘級壽命，僅攜身份與 `tenant_id` 供路由與租戶解析；即使帶 role claims 也絕不作為授權依據——每次判定一律走伺服器端執行器（enforcer））。刷新家族按次登入簽發（按裝置獨立）：有效刷新換新配對並作廢舊權杖；配置寬限窗（`RefreshReuseWindowSeconds`，見決策 7）內重放回傳現行配對不撤銷，窗外重放撤銷家族；停用或改憑證撤銷全家族（覆蓋 `user-auth` 刷新場景）。
+
+曾考慮替代方案：純伺服器端工作階段。否決：第一天即強制黏性狀態，並使未來 API 消費者（店家/POS 裝置）複雜化。
+
+### 4. Credentials with Argon2id, generic failures（憑證以 Argon2id 雜湊，失敗訊息通用化）
+
+Argon2id 雜湊；登入失敗一律回傳單一通用錯誤（不形成使用者枚舉 oracle）；已停用使用者在登入與刷新兩側皆 fail-closed。登入請求攜租戶識別（T1：`{tenant_id, login_name, password}`），未知租戶與錯密碼同訊息、同狀態碼；回應時間墊至同一量級（計時歸一化），未知租戶不得快失敗。
+
+### 5. Frontend: ports + tokens, lint-enforced（前端：ports + tokens，以 lint 強制）
+
+`frontend/src/domain`（純 TS：租戶/工作階段/權限判定）、`application/ports`（`AuthPort`、`HttpPort` 介面）、`adapters/vue`（元件、pinia、router）、`theme/tokens.css`（CSS 變數；tailwind 設定僅映射 tokens）。import lint 規則使 `domain`/`application` 出現 `vue`/`tailwind` 引入即建置失敗。替換 Vue 僅需重寫 `adapters/vue`；替換 Tailwind 僅需替換主題映射。
+
+### 6. Reqnroll maps spec scenarios 1:1（Reqnroll 與 spec 場景一對一映射）
+
+三份 delta specs 的每個 `#### Scenario` 對應一條 `.feature` 場景，以 Testcontainers Postgres 執行；單元測試覆蓋權限判定矩陣，整合測試覆蓋隔離與刷新輪換。
+
+### 7. Policy-watch revocation propagation with `AuthorizationOptions`（政策監看撤銷傳播，以 `AuthorizationOptions` 調校）
+
+授權由伺服器端執行器（enforcer，casbin 風格；其 `domain` 與租戶 1:1 映射，使隔離與權限判定共用同一模型）判定。`RoleRevoked` 事件經既有領域事件匯流排（Domain Event Bus）傳遞；各節點監看（watch）並於配置上限內刷新執行器——無需每請求查詢政策資料庫。所有調校收於部署級選項（啟動驗證、可熱更新），絕不寫死：
+
+| Option（選項名維持英文） | Default（預設值） | Notes（說明） |
+|---|---|---|
+| `PropagationBoundSeconds` | 5（5 秒） | 傳播場景斷言的上限（測試可覆寫） |
+| `Transport` | InMemory | 擴展為多節點時換 Redis；介面不變 |
+| `WatcherInterval` | 1s（1 秒） | 匯流排傳輸無推送時的輪詢退路 |
+| `JwtTtlMinutes` | 5（5 分鐘） | 僅為兜底；claims 不是授權輸入 |
+| `EdgeTrustClaims` | false | 閘道不得僅憑 claims 放行 |
+
+此處僅收部署級旋鈕。租戶級資料（角色定義、授權規則、租戶-domain 映射）留在政策庫——禁止 per-tenant options（租戶一多將撐爆配置面）。
+
+### 8. Party modeling: global Party, per-tenant User, strict dedupe（Party 建模：Party 全域、User 按租戶、嚴格去重）
+
+自然人/組織為全域唯一 Party（證件元組精確去重，禁模糊合併開關——去重語意一動即醫療事故，不給運行時旋鈕）；登入帳號與角色按租戶掛載；地址/連絡人/證件掛 Party；同意授權為角色時間軸 append-only。Party 庫為租戶隔離的守衛例外：僅精確識別比對可達，不可列出或遍歷（`identity/party` spec）。人工合併流程 defer，本期不做。
+
+## Risks / Trade-offs
+
+- [Risk] 手寫查詢繞過全域過濾 -> 緩解：基礎設施測試套件斷言每條 IAM 查詢皆含 `tenant_id`；archive 前經 review-work 閘門。
+- [Risk] 刷新權杖失竊 -> 緩解：輪換 + 重放即撤銷家族；短存取壽命收斂爆炸半徑。
+- [Risk] 偽造範圍冒充 `tenant_id` -> 緩解：作用中租戶僅由已驗證工作階段在伺服器端解析；跨租戶存取預設拒絕（見 `authorization` spec）。
+- [Risk] 共享庫鄰居干擾 / 未來合規拆分 -> 緩解：首切片接受；模組 ports 與事件使抽離保持可能；以 ADR 記錄重議觸發條件。
+- [Trade-off] 已撤銷 JWT 至過期前仍可用 -> 緩解：JWT 無授權效力（決策 3），陳舊權杖單獨授予不了任何東西；執行器側傳播（決策 7）收斂真實空窗；短過期限制重放價值。
+- [Accepted] 資料面 DB 計時殘餘差異 -> 接受：計時歸一化僅做驗證端（登入）；資料面以統一 404＋單一路徑＋游標分頁封堵實務枚舉，殘餘計時差接受不修。
+
+## Migration Plan
+
+綠地，無資料遷移。部署順序：PostgreSQL -> `dotnet ef database update` -> IAM API -> SPA。以冪等 seeder 建立初始租戶 + 操作員。回滾：重跑前一版 migration + 重新部署前一版 API；本變更無破壞性 DDL。
+
+## Open Questions
+
+- 店家/消費者 SSO 的 OIDC 聯邦供應商：延至第二個業務上下文落地；IAM 切片本地簽發器已足夠。
+- 刷新權杖家族壽命與絕對工作階段上限：`apply` 期可調，不動 specs。
+- 稽核日誌保留期：需產品意見，醫院上下文之前決定即可；本期不阻塞。
