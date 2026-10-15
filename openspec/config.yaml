@@ -1,0 +1,55 @@
+schema: spec-driven
+
+context: |
+  Backend: C# + .NET 10, DDD + Modular Monolith first. Bounded Contexts communicate only via integration ports/events; future split to microservices must not require Domain rewrites.
+  BDD: Gherkin acceptance source with Reqnroll; every behavior change needs Given/When/Then cases.
+  Frontend: Vite + Vue 3 + TailwindCSS, but Domain/Application layers forbid importing vue/tailwind. UI consumes design tokens (CSS variables); tailwind config maps tokens only, preserving JS/CSS framework swap.
+  Data: PostgreSQL + EF Core Code-First, multi-tenant shared-db with tenant_id row isolation enforced by global query filters. All schema changes via migrations.
+  Scope: first slice is IAM foundation (organization/user/role/tenant/auth). Hospital compliance details, consumer high-concurrency tuning, and microservice split are non-goals.
+
+# Project context (optional)
+# Add only constraints that should guide OpenSpec artifacts and workflows.
+# Include constraints an agent cannot infer by reading the code.
+# Keep general project documentation and discoverable codebase facts out.
+# Example:
+#   context: |
+#     Designs and tasks must cover Windows, macOS, and Linux
+#     Write all artifacts in Spanish
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always state what is out of scope
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing
+rules:
+  proposal:
+    - Must use grill-me skill
+    # - Must use adversarial-authoring skill
+    # - Must use glossary skill
+  design:
+    - Must use c4-diagram skill
+    # - Must use glossary skill
+
+operations:
+  apply:
+    guidance:
+      - Must use test-driven-development skill
+  archive:
+    guidance:
+      - Must run OpenSpec Sync before archiving
