@@ -4,6 +4,12 @@ Greenfield OpenSpec scaffold — no app code, build, test, lint, or CI exists ye
 
 In case of conflict between the English and Traditional Chinese texts in this file, the English text prevails. 本文件若中英文義衝突，以英文為準。
 
+## Goals
+
+- Enterprise cloud full-stack app, delivered in vertical slices in order: `iam-foundation` → `store-onboarding` → consumer → hospital. 企業雲端全端應用，依序以垂直切片交付：`iam-foundation` → `store-onboarding` → 消費者端 → 醫院端。
+- Backend C# / .NET (DDD + BDD), frontend Vite + Vue 3 (swappable), PostgreSQL. 後端 C#／.NET（DDD＋BDD），前端 Vite＋Vue 3（可替換），PostgreSQL。
+- Out-of-slice needs are recorded only, never built. 非當期 slice 的需求只記錄、不實作。
+
 ## Layout
 
 - `openspec/config.yaml` — schema `spec-driven` with project `context` constraints set. Read it before planning. schema 為 `spec-driven` 且已設定專案 `context` 約束；規劃前必須先讀取。
@@ -33,6 +39,27 @@ Language scope by artifact (to avoid self-contradiction, read this first): specs
 - Requirement titles and scenario names stay English (searchable, mappable to code and `.feature` files). Requirement 標題與場景名稱維持英文（可搜尋、可對應程式碼與 `.feature` 檔）。
 - Each requirement description (text before its first scenario) stays within 500 characters total, both languages combined. 每條 requirement 描述（其首個場景之前的文字）中英合計維持在 500 字元內。
 - Rationale: `openspec validate` parses structure, not language — this format keeps validation green while the team reads Traditional Chinese. New domain terms must enter the glossary with an English-Chinese mapping to prevent term drift; the glossary is mandatory once design/tasks go Chinese-primary. 原理：`openspec validate` 解析結構而非語言——此格式讓驗證通過，同時團隊可用繁中閱讀；design/tasks 以繁中為主後，glossary 為必備，新領域術語必須建立中英對照以防術語漂移。
+
+## Architecture (constitution — violations fail the build)
+
+- Modules are L2 single-project (`src/Modules/<Name>/{Domain,Application,Infrastructure}` + `ArchTests`); no Api inside modules. Layering is enforced by NetArchTest, not by project splitting. 模組為 L2 單專案（`{Domain,Application,Infrastructure}`＋`ArchTests`），模組內無 Api；分層由 NetArchTest 強制，不以多專案切分。
+- API surfaces are composed per org unit by outer `Hosts.*` (`Hosts.HQ`, `Hosts.Store`, `Hosts.Consumer`, …) sharing module libraries; `HostBase` holds shared startup, `Hosts.Migrator` is the sole migrator (online Hosts never auto-migrate), `Hosts.Dev` is dev-only. API 面按組織單位由外層 `Hosts.*` 組裝，共用模組庫；`HostBase` 收共用啟動，`Hosts.Migrator` 為唯一遷移執行者（線上 Host 禁自動 migrate），`Hosts.Dev` 僅開發用。
+- Three guardrails (asserted by ArchTests): Hosts reference Application ports + DTOs only, never Domain entities or Infrastructure; one canonical exposure per use case; cross-cutting only in `HostBase`. 三護欄（ArchTests 斷言）：Hosts 僅引用 Application ports＋DTO，絕不碰 Domain 實體與 Infrastructure；每 use case 單一 canonical 暴露；橫切只進 `HostBase`。
+- Contracts belong to Application; authorization decisions live in Application (Hosts only carry identity); format validation in Hosts, business-rule validation in Application. Contracts 歸 Application；判定只在 Application（Hosts 只搬身份）；格式驗證在 Hosts，業務規則驗證在 Application。
+- Frontend shared packages (`domain`, `application`, `components`) never import framework modules; styling consumes design tokens only; shared components talk via props/events with no store access. 前端共用包絕不引入框架模組；樣式只吃 tokens；共用元件僅經 props/events 通訊、不碰 store。
+- Frontend ships per-org-unit app shells (`apps/hq`, `apps/store`, `apps/consumer`) over shared `packages/*`; each app declares packaging targets (Web first, Web+Tauri+native path open); platform capabilities go through application ports only. 前端按組織單位出應用殼，共用 packages；各應用宣告封裝目標（Web 先行，Tauri 路徑敞開）；平台能力只經 application ports。
+- Guard tests precede the queries they guard (H1 precedent). 守衛測試先於被守衛的查詢（H1 前例）。
+- `SharedKernel` admits only event bases, 3-use kernel value objects (promotion recorded), and cross-cutting ports; no entities, DTOs, or use-case logic. `SharedKernel` 僅收事件基底、3-use 核心值物件（晉升有記錄）、橫切埠；實體、DTO、用例邏輯禁入。
+- Domain events carry the standard envelope and evolve additively; deploys are lockstep across Hosts until broker persistence or split (V2 trigger). 領域事件帶標準信封、加法演進；broker 持久化或拆分前部署跨 Hosts 鎖步（V2 觸發器）。
+- Full text lives in the designs (`iam-foundation` decision 1, `store-onboarding` decision 6); this section is the index, not a copy — update designs first, then mirror here. Once `platform-constitution` archives, the durable contract is `openspec/specs/platform/architecture/spec.md` — consult it before these pointers. 全文在 designs（`iam-foundation` 決策 1、`store-onboarding` 決策 6）；本節為索引非複本——先改 designs，再同步此處。`platform-constitution` 歸檔後，以 `openspec/specs/platform/architecture/spec.md` 為持久契約，優先於此處索引查閱。
+- Monorepo with a single platform version (`version.json` is the sole source); backend `src/` and frontend `frontend/` ship together. Contracts evolve additively only; breaking changes are marked major with migration notes. CI has four gates (build + ArchTests + Reqnroll + lint) — all green before merge. 單倉＋單一平台版本（`version.json` 唯一真相），前後端同倉同發；契約僅加法演進，破壞性變更標 major＋遷移說明；CI 四閘門全綠才可合併。
+
+## Collaboration protocol (P1 self-verify + evidence; full text in `docs/adr/008-*`)
+
+- Tasks verify themselves: the 驗證 clause in `tasks.md` is the acceptance bar — no evidence means not done. Humans do not sign off per task. 任務自驗：`tasks.md` 驗證欄即驗收標準，無證據＝未完成；人不逐項驗收。
+- Three human gates only: review planning artifacts, spot-check during apply, `review-work` before archive. Spot-check any completed task for re-verification; two consecutive failures return the whole batch. 人只守三閘門（審產物、抽查、archive 前 review）；可隨點重驗，連兩次失敗整批退回。
+- AI hard bounds: no unasked commits, no deleting tests to pass, no guessing unread code, never leave broken state; after 3 consecutive failures stop, revert, consult oracle, ask. AI 硬邊界：禁未明示提交、禁刪測試求綠、禁臆測未讀代碼、禁留破損收工；三連敗停手還原問人。
+- Progress is recognized only by `tasks.md` checkboxes + evidence, never by conversation memory. 進度只認核取＋證據，不認對話記憶。
 
 ## Environment
 

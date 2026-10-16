@@ -30,7 +30,7 @@
 ## Impact（影響）
 
 - 新增 .NET 10 方案：`Modules/Iam/{Domain,Application,Infrastructure}`＋`ArchTests`、`SharedKernel`，外層 `Hosts.*`＋`HostBase`＋`Hosts.Migrator`；EF Core + Npgsql migrations；Reqnroll BDD 線束。
-- 新增前端分層：`domain/`、`application/ports/`、`adapters/vue/`、`theme/tokens.css`；Tailwind 僅映射 tokens。
+- 新增前端分層：共用包 `domain/`、`application/ports/`、`components/`、`theme/tokens.css`＋應用殼 `apps/hq`、`apps/store`；Tailwind 僅映射 tokens；各 app 宣告封裝目標（Web 先行）。
 - 新增 Postgres schema（租戶、使用者、角色）；須加全域查詢過濾；Party 身份庫為平台級守衛例外。
 - `user-auth` 建立改為綁定 Party（命中既有或新建）。
 - 範圍之外：醫院合規細則、消費者讀取擴展優化、微服務抽離、本地簽發器以外的 OIDC 聯邦。

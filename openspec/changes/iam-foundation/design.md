@@ -2,7 +2,7 @@
 
 ## Context
 
-綠地專案（`src/` 為空、尚無主規格），動機見 `proposal.md`。專案 `context` 約束：.NET 10、DDD 模組化單體優先（Modular Monolith first，限界上下文間僅經 ports/events 溝通）、Reqnroll BDD、前端分層（adapters/theme 之外禁止引入 `vue`/`tailwind`）、PostgreSQL 共享資料庫多租戶（以 `tenant_id` 過濾隔離）。行為契約：`specs/identity/{tenant,user-auth,authorization}/spec.md`。
+綠地專案（`src/` 為空、尚無主規格），動機見 `proposal.md`。專案 `context` 約束：.NET 10、DDD 模組化單體優先（Modular Monolith first，限界上下文間僅經 ports/events 溝通）、Reqnroll BDD、前端分層（adapters/theme 之外禁止引入 `vue`/`tailwind`）、PostgreSQL 共享資料庫多租戶（以 `tenant_id` 過濾隔離）。行為契約：`specs/identity/{tenant,user-auth,authorization,party}/spec.md`。
 
 C4 Container 圖（c4-diagram skill 分類法，分層 Person -> System -> External）：可編輯原始檔見 `c4_iam_foundation.drawio`。
 
@@ -76,13 +76,13 @@ C4 Container 圖（c4-diagram skill 分類法，分層 Person -> System -> Exter
 
 Argon2id 雜湊；登入失敗一律回傳單一通用錯誤（不形成使用者枚舉 oracle）；已停用使用者在登入與刷新兩側皆 fail-closed。登入請求攜租戶識別（T1：`{tenant_id, login_name, password}`），未知租戶與錯密碼同訊息、同狀態碼；回應時間墊至同一量級（計時歸一化），未知租戶不得快失敗。
 
-### 5. Frontend: ports + tokens, lint-enforced（前端：ports + tokens，以 lint 強制）
+### 5. Frontend F2 app shells + seam contracts（前端 F2 應用殼＋接縫合約）
 
-`frontend/src/domain`（純 TS：租戶/工作階段/權限判定）、`application/ports`（`AuthPort`、`HttpPort` 介面）、`adapters/vue`（元件、pinia、router）、`theme/tokens.css`（CSS 變數；tailwind 設定僅映射 tokens）。import lint 規則使 `domain`/`application` 出現 `vue`/`tailwind` 引入即建置失敗。替換 Vue 僅需重寫 `adapters/vue`；替換 Tailwind 僅需替換主題映射。
+`frontend/apps/{hq,store,consumer}` 獨立應用殼（`consumer` 先空殼佔位），共用 `packages/{domain,application,components,theme,shell}`；依賴單向（apps→packages），eslint 斷言。`components` 為純展示型（props/events、無 store）；`theme/tokens.css` 為樣式唯一來源；port 簽名禁框架型別；平台能力經 application ports。各 app 宣告封裝目標（Web 先行，Web+Tauri+native 路徑敞開）。替換框架僅重寫殼與轉接，加 Tauri 殼不動 packages。
 
 ### 6. Reqnroll maps spec scenarios 1:1（Reqnroll 與 spec 場景一對一映射）
 
-三份 delta specs 的每個 `#### Scenario` 對應一條 `.feature` 場景，以 Testcontainers Postgres 執行；單元測試覆蓋權限判定矩陣，整合測試覆蓋隔離與刷新輪換。
+四份 delta specs 的每個 `#### Scenario` 對應一條 `.feature` 場景，以 Testcontainers Postgres 執行；單元測試覆蓋權限判定矩陣，整合測試覆蓋隔離與刷新輪換。
 
 ### 7. Policy-watch revocation propagation with `AuthorizationOptions`（政策監看撤銷傳播，以 `AuthorizationOptions` 調校）
 

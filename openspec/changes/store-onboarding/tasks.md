@@ -17,10 +17,10 @@
 - [ ] 3.1 以 TDD 實作多店角色 Domain（多店兼任、有效期懶惰判定、調店加減）與單元測試，驗證：人事單元測試通過
 - [ ] 3.2 實作總部跨店角色（租戶級授予）與店級隔離判定，Reqnroll staffing feature 覆蓋全部 5 個場景，驗證：`dotnet test --filter Staffing` 綠燈
 
-## 4. 前端畫面（Frontend views）
+## 4. 前端畫面（Frontend views，`apps/store` 殼）
 
-- [ ] 4.1 實作邀請管理、審核、店員管理三組 Vue 畫面（經既有 ports），驗證：開店鏈端到端走完（邀請→接受→核准→登入）
-- [ ] 4.2 畫面無 `domain`/`application` 層違規引入，驗證：import lint 通過
+- [ ] 4.1 以共用 `components`（props/events、無 store）組裝 `apps/store` 邀請管理、審核、店員管理三組 Vue 畫面（經既有 ports），驗證：開店鏈端到端走完（邀請→接受→核准→登入）
+- [ ] 4.2 新畫面與元件通過接縫 lint（共用包無框架引入、樣式唯 tokens、元件無 store 存取、無直調瀏覽器/原生 API），驗證：全組 lint 綠燈
 
 ## 5. 端到端驗證（End-to-end verification，僅整合檢查）
 

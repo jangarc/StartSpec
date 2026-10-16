@@ -5,7 +5,7 @@ context: |
   BDD: Gherkin acceptance source with Reqnroll; every behavior change needs Given/When/Then cases.
   Frontend: Vite + Vue 3 + TailwindCSS, but Domain/Application layers forbid importing vue/tailwind. UI consumes design tokens (CSS variables); tailwind config maps tokens only, preserving JS/CSS framework swap.
   Data: PostgreSQL + EF Core Code-First, multi-tenant shared-db with tenant_id row isolation enforced by global query filters. All schema changes via migrations.
-  Scope: first slice is IAM foundation (organization/user/role/tenant/auth). Hospital compliance details, consumer high-concurrency tuning, and microservice split are non-goals.
+  Scope: slices in order iam-foundation, then store-onboarding, then consumer, then hospital. Out-of-slice needs are recorded only. Hospital compliance details, consumer high-concurrency tuning, and microservice split are non-goals until their slice.
 
 # Project context (optional)
 # Add only constraints that should guide OpenSpec artifacts and workflows.

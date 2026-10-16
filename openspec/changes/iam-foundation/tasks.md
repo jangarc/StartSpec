@@ -2,7 +2,7 @@
 
 ## 1. 方案鷹架（Solution scaffolding）
 
-- [ ] 1.1 建立 .NET 10 方案：`Modules/Iam/{Domain,Application,Infrastructure}`＋`ArchTests`（L2 單專案）、`Modules/SharedKernel`，外層 `Hosts.HQ`、`Hosts.Store`、`Hosts.Consumer`、`HostBase`、`Hosts.Migrator`、`Hosts.Dev`，分層由 NetArchTest 強制，驗證：`dotnet build` 零警告＋架構測試通過
+- [ ] 1.1 建立 .NET 10 方案：`Modules/Iam/{Domain,Application,Infrastructure}`＋`ArchTests`（L2 單專案）、`Modules/SharedKernel`（准入按 ADR-007：初建僅含事件基底與橫切埠），外層 `Hosts.HQ`、`Hosts.Store`、`Hosts.Consumer`、`HostBase`、`Hosts.Migrator`、`Hosts.Dev`，分層由 NetArchTest 強制，驗證：`dotnet build` 零警告＋架構測試通過
 - [ ] 1.2 加入 EF Core + Npgsql + Reqnroll + Testcontainers + NetArchTest 套件並還原，驗證：`dotnet restore` 成功且套件清單已鎖定
 
 ## 2. 租戶能力（`specs/identity/tenant`）
@@ -37,12 +37,13 @@
 
 - [ ] 6.1 實作 `IEventBus`（傳輸可換為 broker，預設 in-memory 投遞），發佈 `TenantProvisioned`/`UserProvisioned`/`UserDisabled`/`RoleRevoked`，驗證：訂閱測試收到全部四個事件
 
-## 7. 前端分層（Frontend layers）
+## 7. 前端分層（Frontend layers，F2 殼結構）
 
-- [ ] 7.1 搭建 Vite + Vue 3 + Tailwind，含 `domain/`、`application/ports/`、`adapters/vue/`、`theme/tokens.css`（Tailwind 僅映射 tokens），驗證：`npm run build` 成功
-- [ ] 7.2 實作純 TS domain（工作階段、租戶範圍、權限判定）與 vitest 單元測試，零 `vue`/`tailwind` 引入，驗證：`npm run test` 通過
-- [ ] 7.3 實作 `AuthPort`/`HttpPort` 轉接器與 Vue 登入/管理畫面，驅動租戶、user-auth、授權三條流程，驗證：每個畫面對本地 API 走完流程
-- [ ] 7.4 新增 import lint 規則，`domain`/`application` 出現 `vue`/`tailwind` 引入即建置失敗，驗證：植入違規即紅燈、移除即綠燈
+- [ ] 7.1 搭建 workspace：共用包 `domain/`、`application/ports/`、`components/`、`theme/tokens.css`、`shell/`＋應用殼 `apps/hq`、`apps/store`（`apps/consumer` 空殼佔位），各 app 宣告封裝目標（Web 先行），驗證：`npm run build` 全應用成功
+- [ ] 7.2 實作純 TS domain（工作階段、租戶範圍、權限判定）與 vitest 單元測試（純 Node 無 DOM），零框架引入且 port 簽名無框架型別，驗證：`npm run test` 通過
+- [ ] 7.3 實作展示型 `components`（僅 props/events 通訊、不碰 store/router、樣式只吃 tokens）與元件測試，驗證：元件測試通過且 lint 無違規引入
+- [ ] 7.4 實作 `AuthPort`/`HttpPort` 轉接器與 `apps/hq` 登入/管理畫面，驅動租戶、user-auth、授權三條流程，驗證：每個畫面對本地 API 走完流程
+- [ ] 7.5 新增接縫 lint（共用包禁框架引入、port 禁框架型別、樣式唯 tokens 以 stylelint 白名單斷言、禁直調瀏覽器/原生 API），驗證：各植入一處違規皆紅燈、移除即綠燈
 
 ## 8. 端到端驗證（End-to-end verification，僅整合檢查）
 
