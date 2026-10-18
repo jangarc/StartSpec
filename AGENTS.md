@@ -66,6 +66,8 @@ Language scope by artifact (to avoid self-contradiction, read this first): specs
 ## Environment
 
 - Shell is Windows PowerShell (`pwsh`): use `Get-ChildItem -Force`, `Get-Content`; `ls -la`, `head`, `cat` do not exist. Shell 為 Windows PowerShell（`pwsh`）：使用 `Get-ChildItem -Force`、`Get-Content`；`ls -la`、`head`、`cat` 不存在。
+- Run EF migrations via `scripts/Add-IamMigration.ps1 -Name <MigrationName>` (`-DryRun` prints the resolved command); it pins `--project src\Modules\Iam`, `--startup-project src\Hosts\Hosts.Migrator`, `--output-dir Infrastructure\Migrations` regardless of the caller's directory. 執行 EF 遷移一律用 `scripts/Add-IamMigration.ps1 -Name <遷移名稱>`（`-DryRun` 印出解析後指令）；路徑已固化，與呼叫端所在目錄無關。
+- Test-suite invocations are intentionally NOT scripted yet; run them by hand and remember: Unit/Contract live in `src\tests\`, but `ArchTests` lives in `src\ArchTests` (not `src\tests\ArchTests` — MSB1009 pitfall), Reqnroll runs bootstrap Testcontainers Postgres, and every dotnet command needs the UTF-8 console prefix `[Console]::OutputEncoding = [Text.Encoding]::UTF8`. Consolidate these into a test wrapper script when the CI four gates (build + ArchTests + Reqnroll + lint) land. 四套測試指令刻意暫不腳本化：單元／契約在 `src\tests\`，`ArchTests` 在 `src\ArchTests`（不是 `src\tests\ArchTests`——MSB1009 地雷），Reqnroll 會啟動 Testcontainers Postgres，且每條 dotnet 指令需 UTF-8 console 前綴；待 CI 四閘門落地時再固化為測試腳本。
 - Git `master` has zero commits; scaffold (`.opencode/`, `openspec/`) is untracked. Commit only when asked. Git `master` 尚無提交；鷹架（`.opencode/`、`openspec/`）未追蹤；僅在被要求時才提交。
 
 ## OMO (oh-my-openagent)
