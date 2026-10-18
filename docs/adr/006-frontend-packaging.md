@@ -10,7 +10,7 @@
 ## Decision（決策）
 
 - F2：`apps/{hq,store,consumer}` 獨立應用殼，共用 `packages/{domain,application,components,theme,shell}`；依賴單向（apps→packages），ArchTests/eslint 斷言。
-- 各 app 宣告封裝目標；Web 先行；Tauri 殼只加不動包（`platform/architecture` 有 scenario 為證）。
+- 各 app 宣告封裝目標；Web 先行；Tauri 殼只加不動包（`openspec/specs/platform/spec.md` 有 scenario 為證）。
 - 平台能力（儲存、裝置、殼）一律經 application ports；共用包直調瀏覽器/原生 API 即違規。
 - `consumer` app 先開空殼佔位（路由佔位，不實作），證明拆分點。
 

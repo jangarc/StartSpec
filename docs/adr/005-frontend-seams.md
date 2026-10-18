@@ -16,7 +16,7 @@
 
 ## Rationale（理由）
 
-每條皆可驗證（lint/test 即 scenario），故同步寫入 `platform/architecture` spec；換框架時 components 只需「照 props/events 重寫外皮」。
+每條皆可驗證（lint/test 即 scenario），故同步寫入 `openspec/specs/platform/spec.md`；換框架時 components 只需「照 props/events 重寫外皮」。
 
 ## Consequences（後果）
 

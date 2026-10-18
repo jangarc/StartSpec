@@ -3,7 +3,7 @@
 ## 1. 方案鷹架與事件接線（Solution scaffolding）
 
 - [ ] 1.1 建立 `Modules/Store/{Domain,Application,Infrastructure}`＋`ArchTests`（L2，無 Api）並掛入 `Hosts.Store`＋`Hosts.HQ`（三護欄＋G1–G4），驗證：`dotnet build` 零警告＋架構測試通過
-- [ ] 1.2 訂閱 `TenantProvisioned`（品牌租戶就緒方可開店），驗證：發佈測試事件後 Store 收到
+- [ ] 1.2 訂閱 `TenantProvisioned`（品牌租戶就緒方可開店；經 `IEventBus`，事件帶 ADR-009 標準信封；測試以 seedwork fake 斷言 at-least-once＋消費者冪等語意，契約場景由 spec 派生、fake 先行），驗證：發佈測試事件後 Store 收到＋fake 重投遞語意測試綠
 - [ ] 1.3 新增 `store_id` 守衛測試（守衛先行，H1）：斷言店級查詢皆含 `tenant_id`＋`store_id`，驗證：守衛框架就位，後續查詢出生即被斷言
 
 ## 2. 開店鏈（`specs/store/provisioning`）

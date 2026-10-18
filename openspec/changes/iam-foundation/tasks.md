@@ -7,8 +7,8 @@
 
 ## 2. 租戶能力（`specs/identity/tenant`）
 
-- [ ] 2.1 以 TDD 實作租戶 Domain（`Tenant`、`Organization`、`TenantProvisioned` 事件）與單元測試，驗證：租戶單元測試通過
-- [ ] 2.2 實作租戶建立/解析 application ports、EF 實體、`tenant_id` 全域過濾與初始 migration，驗證：migration 可乾淨套用至 Testcontainers Postgres
+- [ ] 2.1 以 TDD 實作租戶 Domain（`Tenant`、`Organization`、`TenantProvisioned` 事件）與單元測試；同步落位 contract seedwork 基底（契約測試基底類＋SharedKernel 已宣告 port 之 fake，准入按 ADR-010；契約場景 SHALL 由 spec 派生、fake 先行為參考實作，禁由第一實作反推），驗證：租戶單元測試通過＋契約測試基底可在 seedwork 之家載入並執行
+- [ ] 2.2 實作租戶建立/解析 application ports、EF 實體、`tenant_id` 全域過濾與初始 migration；附 persistence 接縫之 port contract tests＋fake（persistence seam，契約場景由 spec 派生、fake 先行），驗證：migration 可乾淨套用至 Testcontainers Postgres＋隔離真實實作斷言（Testcontainers）與 fake 契約套件皆綠
 - [ ] 2.3 新增過濾守衛測試（守衛先行），斷言每條 IAM 查詢皆含 `tenant_id`（Party 身份庫除外）且跨租戶拒絕與不存在回應一致，驗證：守衛框架就位，後續查詢出生即被斷言；移除任一過濾即紅燈、恢復即綠燈
 - [ ] 2.4 開放租戶 API 端點，Reqnroll feature 覆蓋全部 8 個租戶場景，驗證：`dotnet test --filter Tenant` 綠燈（含守衛全程通過）
 
@@ -22,8 +22,8 @@
 ## 4. 使用者驗證能力（`specs/identity/user-auth`）
 
 - [ ] 4.1 實作使用者 Domain（`User`、啟用/停用生命週期、`UserProvisioned`/`UserDisabled` 事件）與單元測試，驗證：使用者單元測試通過
-- [ ] 4.2 實作 Argon2id 憑證服務與登入應用（`{tenant_id, login_name, password}`，四種失敗同一訊息/狀態碼），錯誤憑證一律通用失敗，驗證：登入單元測試通過（含無使用者枚舉、未知租戶無區別、計時歸一化測試）
-- [ ] 4.3 實作短效 JWT 存取 + 按裝置刷新家族 + 寬限窗重放（窗內回現行配對、窗外撤銷家族、停用撤銷全家族），驗證：刷新整合測試通過（成功、窗內重放、窗外撤銷、逾期拒絕、雙裝置互不干擾）
+- [ ] 4.2 實作 Argon2id 憑證服務與登入應用（`{tenant_id, login_name, password}`，四種失敗同一訊息/狀態碼），錯誤憑證一律通用失敗；憑證 port 附契約測試＋fake（auth 接縫，契約場景由 spec 派生、fake 先行），驗證：登入單元測試通過（含無使用者枚舉、未知租戶無區別、計時歸一化測試）＋憑證 port 契約套件綠
+- [ ] 4.3 實作短效 JWT 存取 + 按裝置刷新家族 + 寬限窗重放（窗內回現行配對、窗外撤銷家族、停用撤銷全家族）；token 簽發 port 附契約測試＋fake（auth 接縫，契約場景由 spec 派生、fake 先行），驗證：刷新整合測試通過（成功、窗內重放、窗外撤銷、逾期拒絕、雙裝置互不干擾）＋token port 契約套件綠
 - [ ] 4.4 開放驗證 API 端點，Reqnroll feature 覆蓋全部 12 個 user-auth 場景，驗證：`dotnet test --filter UserAuth` 綠燈
 - [ ] 4.5 新增冪等 seeder（初始租戶 + 操作員），驗證：連跑兩次，第二次零新增
 
@@ -35,7 +35,7 @@
 
 ## 6. 領域事件接縫（Domain events seam）
 
-- [ ] 6.1 實作 `IEventBus`（傳輸可換為 broker，預設 in-memory 投遞），發佈 `TenantProvisioned`/`UserProvisioned`/`UserDisabled`/`RoleRevoked`，驗證：訂閱測試收到全部四個事件
+- [ ] 6.1 實作 `IEventBus`（SharedKernel 橫切 port；傳輸可換為 broker，預設 in-memory 投遞），發佈 `TenantProvisioned`/`UserProvisioned`/`UserDisabled`/`RoleRevoked`（事件帶 ADR-009 標準信封）；事件接縫義務：**at-least-once** 傳遞＋**消費者冪等**義務，in-memory fake SHALL 模擬重投遞（契約場景由 spec 派生、fake 先行，驗收對 fake＋已接線實作雙跑），驗證：訂閱測試收到全部四個事件＋事件接縫契約套件（含 fake 重投遞與冪等斷言）綠
 
 ## 7. 前端分層（Frontend layers，F2 殼結構）
 
@@ -47,7 +47,7 @@
 
 ## 8. 端到端驗證（End-to-end verification，僅整合檢查）
 
-- [ ] 8.1 對乾淨 Postgres 執行完整 Reqnroll 套件（全部 35 個 spec 場景），驗證：`dotnet test` 全綠
+- [ ] 8.1 對乾淨 Postgres 執行完整 Reqnroll 套件（全部 35 個 spec 場景）＋四接縫 port contract 契約測試策略（fake 全跑＋已接線實作按其就位狀態），驗證：`dotnet test` 全綠
 - [ ] 8.2 對本變更執行 review-work 閘門，逐條處理或記錄發現，驗證：審查報告附於變更且零開放 blocker
 
 ## Workflow follow-up

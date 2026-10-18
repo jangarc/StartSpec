@@ -16,11 +16,12 @@
 | `ICommandBus` / `IEventBus` | Paramore Brighter / Darker（MIT；10.7.0 活躍，.NET 8/9/10） | CAP（MIT） | contract-kept |
 | 事件傳輸 | RabbitMQ；`RabbitMQ.Client` v7（Apache-2.0/MIT 雙授權） | Valkey 輪詢退路 | contract-kept |
 | DTO/Entity 映射 | Riok.Mapperly（Apache-2.0；source-gen、無反射） | Mapster（MIT）；手寫 partial map | contract-kept |
-| 授權判定 enforcer | casbin-dotnet（Apache-2.0；Apache Foundation 孵化中） | OPA（Apache-2.0） | contract-kept（enforcer 住 Application，Hosts 只搬身份） |
+| 授權判定 enforcer | Casbin.NET（Apache-2.0；NuGet 套件 ID 為 `Casbin.NET`，非 informal 的 casbin-dotnet；Apache Foundation 孵化中——2026-02-07 進入，截至 2026-08 尚無 Apache 首發版） | OPA（Apache-2.0） | 模組用（G2：enforcer 住 Application，Hosts 只搬身份；見 iam design 決策 7/G2） |
 | DTO 驗證 | FluentValidation（Apache-2.0） | DataAnnotations；Application 手寫 | contract-kept |
 | Logging/遙測 | Serilog（Apache-2.0）＋ OpenTelemetry（Apache-2.0） | NLog（BSD-3）；`Microsoft.Extensions.Logging`（MIT） | contract-kept |
-| Persistence | EF Core＋Npgsql（MIT） | Dapper（Apache-2.0） | contract-kept；替換＝major |
-| Argon2id | Konscious.Security.Cryptography.Argon2（Apache-2.0） | Isopoh.Cryptography.Argon2（MIT） | 模組測試守護 |
+| Persistence | EF Core＋Npgsql（MIT／PostgreSQL License——Npgsql 為 OSI 認證之 PostgreSQL License，BSD/MIT 風格） | Dapper（Apache-2.0） | contract-kept；替換＝major |
+| Argon2id | Konscious.Security.Cryptography.Argon2（MIT；已查證 GitHub＋NuGet/license page） | Isopoh.Cryptography.Argon2（**CC BY 4.0**（README LICENSE 條款；非 MIT——屬性授權，分發須保留作者聲明，選用前重讀條款；上游 LICENSE 檔自述 CC0 1.0 與 README 不一致）；2023-08 起休維） | auth 接縫（contract-kept） |
+| JWT（短效存取權杖） | Microsoft.IdentityModel.JsonWebTokens（MIT） | System.IdentityModel.Tokens.Jwt（MIT） | auth 接縫（contract-kept） |
 | 快取 | Valkey（BSD-3）＋StackExchange.Redis（MIT，對 Valkey 相容） | FusionCache / HybridCache（MIT） | contract-kept |
 | 背景作業 | Quartz.NET（Apache-2.0） | Hangfire Core（LGPL-3.0，商用免費） | contract-kept |
 | 物件儲存（S3） | SeaweedFS（Apache-2.0） | Ceph（LGPL-2.1） | contract-kept |
@@ -29,7 +30,7 @@
 | 韌性 | Polly（BSD-3）＋Microsoft.Extensions.Resilience（MIT） | 手寫 policy | contract-kept |
 | Office | DocumentFormat.OpenXml（MIT）；ClosedXML（MIT／Excel） | NPOI（Apache-2.0）；MiniExcel（Apache-2.0）；ExcelDataReader（MIT 唯讀） | 模組用、非架構接縫 |
 | PDF | PdfPig（Apache-2.0 讀取）；PDFsharp 6（MIT 讀寫／產生） | — | 模組用、非架構接縫 |
-| 其他 | NodaTime（Apache-2.0）；FluentFTP（Apache-2.0）；OpenIddict / Keycloak（Apache-2.0，Post-V1） | Humanizer（MIT）；Bogus（MIT 測試資料） | 依用途 |
+| 其他 | NodaTime（Apache-2.0）；FluentFTP（MIT——已查證，原誤記 Apache-2.0）；OpenIddict / Keycloak（Apache-2.0，Post-V1） | Humanizer（MIT）；Bogus（MIT 測試資料） | 依用途 |
 | 測試棧 | Reqnroll（MIT）＋Testcontainers（MIT）＋NetArchTest（MIT，休眠中） | ArchUnitNET（Apache-2.0，活躍） | — |
 
 ## Rationale（理由）

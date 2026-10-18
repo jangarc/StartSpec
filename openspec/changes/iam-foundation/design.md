@@ -55,6 +55,7 @@ C4 Container 圖（c4-diagram skill 分類法，分層 Person -> System -> Exter
 - G2 判定只在 Application：enforcer 住 Application，Host 只搬運身份（claims → 調用上下文）。
 - G3 驗證分層：格式驗證在 Host（早失敗），業務規則驗證在 Application（單一真相，永不信任 Host）。
 - G4 營運：`Hosts.Migrator` 為唯一遷移執行者（固定順序、冪等；線上 Host 禁自動 migrate；按 Host 分 migrate 明確否決——migration 是資料庫 concern）；`Hosts.Dev` 一鍵全起僅開發用；`HostBase` 統一 OpenTelemetry＋tenant/store 標籤。
+- **組合根（composition root）**：各模組 Infrastructure SHALL 暴露單一組合入口擴充方法（如 `AddIam(this IServiceCollection)`）；Host 端點程式碼仍僅觸 Application ports＋DTO，允許調用組合入口（ArchTests 以白名單明文豁免組合入口類別）；`Hosts.Migrator` 因唯一遷移執行者身分取得明文豁免（需引用模組 EF DbContext 進行遷移接線）；SharedKernel 橫切 port（`IEventBus`、`IClock`）的 binding adapter SHALL 住 `HostBase`（跨模組共享，禁入單一模組的 Infrastructure——否則他模組將被迫依賴 Iam 模組取用 SharedKernel port）。
 
 曾考慮替代方案：第一天即微服務。否決：分散式租戶執法與分散式驗證會擋在第一個可用登入之前；Hosts 模型已把部署邊界切到組織單位，事件邊界保留後續拆分路徑，無需現在付出代價。
 
@@ -91,7 +92,7 @@ Argon2id 雜湊；登入失敗一律回傳單一通用錯誤（不形成使用�
 | Option（選項名維持英文） | Default（預設值） | Notes（說明） |
 |---|---|---|
 | `PropagationBoundSeconds` | 5（5 秒） | 傳播場景斷言的上限（測試可覆寫） |
-| `Transport` | InMemory | 擴展為多節點時換 **Valkey**（BSD-3；Redis 8 起授權為 RSALv2/SSPL，違反本專案「禁已改為收費的工具」原則，`StackExchange.Redis` MIT 客端對 Valkey 相容）；介面不變 |
+| `Transport` | InMemory | **分階段**：多節點中繼期換 **Valkey** pub/sub（BSD-3；Redis 授權之非 BSD 變更始於 7.4（RSALv2/SSPL）、Redis 8 起三重授權含 AGPLv3，違反本專案工具鏈選型原則）；broker 持久化期（V2 觸發器，ADR-009）改用 **RabbitMQ**（見決策 9 表＋`docs/adr/012`）——兩者皆同一 `IEventBus` 介面之下游演進，介面不變 |
 | `WatcherInterval` | 1s（1 秒） | 匯流排傳輸無推送時的輪詢退路 |
 | `JwtTtlMinutes` | 5（5 分鐘） | 僅為兜底；claims 不是授權輸入 |
 | `EdgeTrustClaims` | false | 閘道不得僅憑 claims 放行 |
@@ -111,11 +112,12 @@ Argon2id 雜湊；登入失敗一律回傳單一通用錯誤（不形成使用�
 | `ICommandBus` / `IEventBus` | Paramore Brighter / Darker（MIT） | CAP（MIT，outbox/saga 補位） | contract-kept |
 | 事件傳輸（.transport） | RabbitMQ（＋`RabbitMQ.Client` v7，Apache-2.0/MIT 雙授權） | Valkey＋輪詢退路 | contract-kept |
 | DTO/Entity 映射 | Riok.Mapperly（Apache-2.0，source-gen） | Mapster（MIT）、手寫 partial map | contract-kept |
-| 授權判定（enforcer） | Casbin / `casbin-dotnet`（Apache-2.0，Apache Foundation 孵化） | OPA（Apache-2.0） | contract-kept（G2：enforcer 住 Application） |
+| 授權判定（enforcer） | Casbin.NET（Apache-2.0；NuGet 套件 ID 為 `Casbin.NET`，Apache Foundation 孵化） | OPA（Apache-2.0） | 模組用（G2：enforcer 住 Application；grade 見 D1'/ADR-010 決策說明） |
 | DTO 驗證 | FluentValidation（Apache-2.0） | DataAnnotations（內建）、Application 手寫規則驗證 | contract-kept |
 | Logging | Serilog（Apache-2.0）＋ OpenTelemetry（Apache-2.0） | NLog（BSD-3）、`Microsoft.Extensions.Logging`（MIT） | contract-kept |
 | Persistence | EF Core＋Npgsql（MIT，PostgreSQL 原生） | Dapper（Apache-2.0） | contract-kept｜替換＝major（ADR-010） |
-| 授權雜湊 | Konscious.Security.Cryptography.Argon2（Apache-2.0） | Isopoh.Cryptography.Argon2（MIT） | 模組測試守護 |
+| 授權雜湊 | Konscious.Security.Cryptography.Argon2（MIT，已查證） | Isopoh.Cryptography.Argon2（CC BY 4.0，屬性授權——選用前重讀條款） | auth 接縫（contract-kept） |
+| JWT（短效存取權杖） | Microsoft.IdentityModel.JsonWebTokens（MIT） | System.IdentityModel.Tokens.Jwt（MIT） | auth 接縫（contract-kept） |
 | 快取 | Valkey＋`StackExchange.Redis`（MIT） | FusionCache / `HybridCache`（MIT） | contract-kept |
 | 背景作業 | Quartz.NET（Apache-2.0） | Hangfire Core（LGPL-3.0，商用免費已驗證） | contract-kept |
 | 物件儲存（S3 協定） | SeaweedFS（Apache-2.0） | Ceph（LGPL-2.1） | contract-kept |

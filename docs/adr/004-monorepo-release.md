@@ -10,7 +10,7 @@
 ## Decision（決策）
 
 - 單倉先行（至少至醫院端上線）：後端 `src/`、前端 `frontend/` 同倉，單一平台版本號（`version.json` 唯一真相）；組合性由專案參照＋ArchTests 保證。
-- 契約紀律：ports、領域事件、REST/OpenAPI 僅加法演進；破壞性變更標 major＋遷移說明；契約測試守門（見 `platform/architecture` spec）。
+- 契約紀律：ports、領域事件、REST/OpenAPI 僅加法演進；破壞性變更標 major＋遷移說明；契約測試守門（見 `openspec/specs/platform/spec.md`）。
 - 流程紀律：固定發佈節奏、conventional commits→changelog、CI 四閘門（build＋ArchTests＋Reqnroll＋lint）全綠才可合併；每 release 附 OpenAPI 快照為前端契約真相。
 
 ## Rationale（理由）

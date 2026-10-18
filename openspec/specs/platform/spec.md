@@ -1,10 +1,10 @@
-# Spec Delta
+# platform Specification
 
 ## Purpose
 
 Establishes the platform layering constitution as an archivable, referenceable contract: L2 modules, per-org-unit Hosts, guardrails, and ownership rules, each verifiable by architecture tests. 將平台分層憲法立為可歸檔、可引用的契約：L2 模組、按組織單位 Hosts、護欄與歸屬規則，每條皆可由架構測試驗證。
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: L2 single-project modules
 
@@ -17,12 +17,12 @@ Each module SHALL be a single project with `Domain`, `Application`, `Infrastruct
 
 ### Requirement: Hosts compose per org unit
 
-API surfaces SHALL be composed per org unit by outer `Hosts.*` sharing module libraries; Hosts SHALL reference Application ports and DTOs only, never Domain entities or Infrastructure. API 面 SHALL 由外層 `Hosts.*` 按組織單位組裝並共用模組庫；Hosts SHALL 僅引用 Application ports 與 DTO，絕不碰 Domain 實體或 Infrastructure。
+API surfaces SHALL be composed per org unit by outer `Hosts.*` sharing module libraries; Hosts SHALL reference Application ports and DTOs only, never Domain entities or Infrastructure, except the sanctioned composition entries exposed by module Infrastructure and the Migrator's migration wiring. API 面 SHALL 由外層 `Hosts.*` 按組織單位組裝並共用模組庫；Hosts SHALL 僅引用 Application ports 與 DTO，絕不碰 Domain 實體或 Infrastructure——僅明文豁免：模組 Infrastructure 暴露之組合入口與 `Hosts.Migrator` 之遷移接線。
 
 #### Scenario: Host references guarded
 
 - **WHEN** the architecture test suite runs（架構測試套件執行）
-- **THEN** any Host reference to Domain or Infrastructure fails the build（Host 對 Domain 或 Infrastructure 的任何引用皆使建置失敗）
+- **THEN** any Host reference to Domain or Infrastructure outside the sanctioned composition entries and the Migrator migration wiring fails the build（Host 對 Domain 或 Infrastructure 的任何引用——組合入口與 Migrator 遷移接線之明文豁免除外——皆使建置失敗）
 
 ### Requirement: Single canonical exposure
 
@@ -135,7 +135,7 @@ Every domain event SHALL carry the standard envelope (`event_id`, `occurred_at`,
 
 ### Requirement: Swappable seam catalog
 
-Four seams SHALL be maintained as publicly swappable: persistence (EF Core/Npgsql), event transport (`IEventBus`), Host composition plus frontend framework, and authentication technology. Each seam SHALL keep port contract tests, a fake implementation, and an ArchTests assertion; the default obligation is contract-kept, and full swap-proven duties SHALL be paid only when a second implementation becomes real. 平台 SHALL 維持四個公開可替換接縫：persistence（EF Core/Npgsql）、event transport（`IEventBus`）、Host 組裝與前端框架、認證技術；每接縫 SHALL 維持 port contract tests、fake 實作與 ArchTests 斷言；預設義務為 contract-kept，僅當第二實作成真才付 swap-proven 全驗義務。
+Four seams SHALL remain publicly swappable: persistence (EF Core/Npgsql), event transport (`IEventBus`), Host and frontend composition, and authentication technology. Each SHALL keep port contract tests, a fake, and an ArchTests assertion; default is contract-kept; swap-proven duties SHALL be paid only when a second implementation exists. SHALL 保持四接縫可替換：persistence、event transport、Host 與前端組裝、認證技術；每接縫 SHALL 維持 contract tests、fake 與 ArchTests 斷言；預設 contract-kept，僅第二實作成真才付 swap-proven 義務。
 
 #### Scenario: Seam guards kept
 
@@ -149,7 +149,7 @@ Four seams SHALL be maintained as publicly swappable: persistence (EF Core/Npgsq
 
 ### Requirement: Swap acceptance and rehearsal
 
-A seam swap SHALL be accepted only when the port contract tests pass against the new implementation and the four CI gates are green on the new wiring; the swap SHALL be rehearsed in `Hosts.Dev` with contract and E2E suites green and a recorded rollback note. A persistence seam swap SHALL be a major version with schema and data migration notes. 接縫替換 SHALL 僅在新實作的 port contract tests 全綠且四閘門於新接線全綠時驗收；替換 SHALL 於 `Hosts.Dev` 演練（contract 與 E2E 套件綠），並記錄 rollback note；persistence 接縫替換 SHALL 定為 major 版本並附 schema 與資料遷移說明。
+A seam swap SHALL be accepted only when port contract tests pass against the new implementation and the four CI gates are green on the new wiring; the swap SHALL be rehearsed in `Hosts.Dev` with contract and E2E suites green plus a recorded rollback note. A persistence swap SHALL be a major version with schema and data migration notes. 替換 SHALL 僅在新實作 contract tests 全綠且四閘門於新接線全綠時驗收；SHALL 在 `Hosts.Dev` 演練（contract 與 E2E 綠）並附 rollback note；persistence 替換 SHALL 為 major 版本並附 schema 與資料遷移說明。
 
 #### Scenario: Swap rehearsed before rollout
 
@@ -181,7 +181,7 @@ The `IEventBus` port contract SHALL specify at-least-once delivery and consumer 
 
 ### Requirement: Product repo boundary and kernel baseline
 
-One product SHALL be one repository with its own tenant space, `version.json`, and deployment; this repo is product #1 and new products fork from the thin kernel. The thin kernel — `SharedKernel` plus cross-cutting ports, the event envelope base, and module admission rules — SHALL evolve on a shared baseline: its contract surface evolves additively, fixes flow via scheduled baseline bumps, divergence SHALL be bounded by a window with a CI drift alarm. 每商品 SHALL 一倉（自有 tenant 空間、`version.json` 與部署）；本倉即商品 #1，新商品自 thin kernel fork。Thin kernel（`SharedKernel`＋橫切 ports＋事件信封基底＋模組准入規則）SHALL 走共享基線：契約面僅加法演進，修復以排程 baseline bump 傳遞，分歧窗有界並掛 CI drift alarm。
+One product SHALL be one repository with own tenant space, `version.json`, and deployment; this repo is product #1 and new products fork from the thin kernel. The thin kernel SHALL evolve on a shared baseline: additive contract surface, fixes via scheduled baseline bumps, and bounded divergence with a CI drift alarm. 每商品 SHALL 一倉（自有 tenant 空間、`version.json`、部署）；本倉為商品 #1，新商品由其 fork。Thin kernel SHALL 走共享基線：契約面僅加法、修復經排程 baseline bump、分歧窗有界＋CI drift alarm。
 
 #### Scenario: Divergence alarmed
 
@@ -195,7 +195,7 @@ One product SHALL be one repository with its own tenant space, `version.json`, a
 
 ### Requirement: Rule precedence
 
-For architecture contract content, the spec SHALL outrank ADRs, and ADRs SHALL outrank AGENTS.md; ADRs SHALL remain normative for process discipline that the spec cannot assert; AGENTS.md is an index only. All rules SHALL live in files (specs deltas, ADRs, AGENTS.md, glossary) as the handover carrier, and a rule stated only in conversation SHALL not be authoritative. 架構契約內容的優先序 SHALL 為 spec > ADR > AGENTS.md；spec 無法斷言的 process discipline 由 ADR 維持規範性；AGENTS.md 僅為索引。規則一律落檔（specs delta、ADR、AGENTS.md、glossary）作為交接載體；僅存於對話的規則 SHALL 不具裁決力。
+For architecture contract content the spec SHALL outrank ADRs, and ADRs SHALL outrank AGENTS.md; ADRs SHALL remain normative for process discipline the spec cannot assert; AGENTS.md is an index only. All rules SHALL live in files (specs, ADRs, AGENTS.md, glossary); a rule stated only in conversation SHALL not be authoritative. 架構契約內容 SHALL 按 spec > ADR > AGENTS.md；spec 無法斷言之 process discipline 由 ADR 維持規範性；AGENTS.md 僅為索引。規則 SHALL 一律落檔（specs、ADR、AGENTS.md、glossary）；僅存於對話的規則不具裁決力。
 
 #### Scenario: Conflict resolved by rank
 
