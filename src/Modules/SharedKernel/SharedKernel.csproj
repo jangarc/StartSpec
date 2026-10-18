@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Thin kernel per ADR-007: event bases + cross-cutting ports ONLY. No entities, no DTOs, no use-case logic. -->
+
+  <PropertyGroup>
+    <RootNamespace>SharedKernel</RootNamespace>
+    <AssemblyName>SharedKernel</AssemblyName>
+  </PropertyGroup>
+
+</Project>

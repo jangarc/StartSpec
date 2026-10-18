@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Contract seedwork home (ADR-010): ONLY test-purpose plumbing — port contract test base classes,
+       fakes for SharedKernel-declared ports, shared fixtures. Module-owned fakes stay in module tests;
+       business logic and production references are forbidden here (ArchTests-reviewed). -->
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>ContractSeedwork</RootNamespace>
+    <AssemblyName>ContractSeedwork</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <ProjectReference Include="..\..\Modules\SharedKernel\SharedKernel.csproj" />
+  </ItemGroup>
+
+</Project>

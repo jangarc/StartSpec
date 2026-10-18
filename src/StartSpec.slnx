@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/Hosts/">
+    <Project Path="Hosts/HostBase/HostBase.csproj" />
+    <Project Path="Hosts/Hosts.Consumer/Hosts.Consumer.csproj" />
+    <Project Path="Hosts/Hosts.Dev/Hosts.Dev.csproj" />
+    <Project Path="Hosts/Hosts.HQ/Hosts.HQ.csproj" />
+    <Project Path="Hosts/Hosts.Migrator/Hosts.Migrator.csproj" />
+    <Project Path="Hosts/Hosts.Store/Hosts.Store.csproj" />
+  </Folder>
+  <Folder Name="/Modules/">
+    <Project Path="Modules/Iam/Iam.csproj" />
+    <Project Path="Modules/SharedKernel/SharedKernel.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ContractSeedwork/ContractSeedwork.csproj" />
+    <Project Path="tests/Iam.ContractTests/Iam.ContractTests.csproj" />
+    <Project Path="tests/Iam.Reqnroll/Iam.Reqnroll.csproj" />
+    <Project Path="tests/Iam.UnitTests/Iam.UnitTests.csproj" />
+  </Folder>
+  <Project Path="ArchTests/ArchTests.csproj" />
+</Solution>

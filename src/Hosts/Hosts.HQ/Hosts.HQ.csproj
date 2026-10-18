@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- Org-unit host for HQ. Endpoints may only touch Application ports + DTOs and the module composition root (AddIam) — ArchTests guardrule. -->
+
+  <PropertyGroup>
+    <RootNamespace>Hosts.HQ</RootNamespace>
+    <AssemblyName>Hosts.HQ</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HostBase\HostBase.csproj" />
+    <ProjectReference Include="..\..\Modules\Iam\Iam.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Reqnroll BDD harness: one .feature scenario per spec `#### Scenario` via Testcontainers Postgres (design D6). -->
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Iam.Reqnroll</RootNamespace>
+    <AssemblyName>Iam.Reqnroll</AssemblyName>
+    
+    <!-- Reqnroll's runtime + code generation do not ship analyzers-aware sources; keep verify-on-build off. -->
+    <ReqnrollGenerateBindings>true</ReqnrollGenerateBindings>
+  </PropertyGroup>
+
+  <!-- Reqnroll constructs named CultureInfo instances (en-US) at scenario start; the repo-wide
+       invariant-globalization setting in Directory.Build.props makes those throws. Reqnroll needs
+       real cultures, so only this test project opts back in. -->
+  <PropertyGroup>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Reqnroll" />
+    <PackageReference Include="Reqnroll.xUnit" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" IncludeAssets="runtime;build;native;contentfiles;analyzers;buildtransitive" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Hosts\Hosts.HQ\Hosts.HQ.csproj" />
+    <ProjectReference Include="..\..\Hosts\HostBase\HostBase.csproj" />
+    <ProjectReference Include="..\ContractSeedwork\ContractSeedwork.csproj" />
+  </ItemGroup>
+
+</Project>

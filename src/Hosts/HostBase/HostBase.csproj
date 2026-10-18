@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Cross-cutting home: OpenTelemetry, tenant resolution, ProblemDetails, SharedKernel port binding adapters (iam design D1', ADR-002). Violations here fail ArchTests like everywhere else. -->
+
+  <PropertyGroup>
+    <RootNamespace>Hosts.Base</RootNamespace>
+    <AssemblyName>HostBase</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="..\..\Modules\SharedKernel\SharedKernel.csproj" />
+  </ItemGroup>
+
+</Project>

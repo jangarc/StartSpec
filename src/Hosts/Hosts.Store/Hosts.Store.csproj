@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- Org-unit host for Store. Second exposure: thin adaptation over the SAME Application handlers — no logic (canonical-exposure guardrule). -->
+
+  <PropertyGroup>
+    <RootNamespace>Hosts.Store</RootNamespace>
+    <AssemblyName>Hosts.Store</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HostBase\HostBase.csproj" />
+  </ItemGroup>
+
+</Project>

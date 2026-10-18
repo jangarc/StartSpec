@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- Org-unit host for Consumer: empty shell placeholder (F2 split-point proof). Real scope deferred to the consumer slice. -->
+
+  <PropertyGroup>
+    <RootNamespace>Hosts.Consumer</RootNamespace>
+    <AssemblyName>Hosts.Consumer</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HostBase\HostBase.csproj" />
+  </ItemGroup>
+
+</Project>

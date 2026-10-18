@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Unit tests for the Iam module (domain/application TDD, tasks 2.1+). Pure in-memory; no containers. -->
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Iam.UnitTests</RootNamespace>
+    <AssemblyName>Iam.UnitTests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" IncludeAssets="runtime;build;native;contentfiles;analyzers;buildtransitive" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Iam\Iam.csproj" />
+    <ProjectReference Include="..\ContractSeedwork\ContractSeedwork.csproj" />
+    <!-- Module-owned port fakes live in module tests (ADR-010); reuse the locked InMemoryTenantStore. -->
+    <ProjectReference Include="..\Iam.ContractTests\Iam.ContractTests.csproj" />
+  </ItemGroup>
+
+</Project>

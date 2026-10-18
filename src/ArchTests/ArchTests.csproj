@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Platform-wide architecture guardrails (ADR-001/002/003/007): NetArchTest assertions, run in CI. 架構測試套件——守衛規則機器斷言。 -->
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>ArchTests</RootNamespace>
+    <AssemblyName>ArchTests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NetArchTest.Rules" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" IncludeAssets="runtime;build;native;contentfiles;analyzers;buildtransitive" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Modules\Iam\Iam.csproj" />
+    <ProjectReference Include="..\Modules\SharedKernel\SharedKernel.csproj" />
+    <ProjectReference Include="..\Hosts\HostBase\HostBase.csproj" />
+    <ProjectReference Include="..\Hosts\Hosts.HQ\Hosts.HQ.csproj" />
+    <ProjectReference Include="..\Hosts\Hosts.Store\Hosts.Store.csproj" />
+    <ProjectReference Include="..\Hosts\Hosts.Consumer\Hosts.Consumer.csproj" />
+    <ProjectReference Include="..\Hosts\Hosts.Migrator\Hosts.Migrator.csproj" />
+    <ProjectReference Include="..\Hosts\Hosts.Dev\Hosts.Dev.csproj" />
+  </ItemGroup>
+
+</Project>

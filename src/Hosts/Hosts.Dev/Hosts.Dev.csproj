@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- Dev-only one-button host (design D4'): wires all modules for local rehearsal. NEVER used in production deploys; migration rehearsal stays in Hosts.Migrator. -->
+
+  <PropertyGroup>
+    <RootNamespace>Hosts.Dev</RootNamespace>
+    <AssemblyName>Hosts.Dev</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HostBase\HostBase.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Port contract tests for the four seams (ADR-010): derived FROM spec requirements, fake-first,
+       double-run over fake + wired implementations. 持久化/auth/事件接縫契約套件（契約場景由 spec 派生）。 -->
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Iam.ContractTests</RootNamespace>
+    <AssemblyName>Iam.ContractTests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" IncludeAssets="runtime;build;native;contentfiles;analyzers;buildtransitive" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Iam\Iam.csproj" />
+    <ProjectReference Include="..\..\Modules\SharedKernel\SharedKernel.csproj" />
+    <ProjectReference Include="..\ContractSeedwork\ContractSeedwork.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Sole migration runner (ADR-003 / iam design D4'): fixed order, idempotent. Online hosts NEVER auto-migrate. -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Hosts.Migrator</RootNamespace>
+    <AssemblyName>Hosts.Migrator</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" IncludeAssets="runtime;build;native;contentfiles;analyzers;buildtransitive" />
+  </ItemGroup>
+
+  <!-- Migrator wiring: the sanctioned exemption to "Hosts never touch module Infrastructure" (design D4', G4). Checked against task 2.2. HostBase supplies the cross-cutting bindings (IClock/IEventBus) the seed use cases consume. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Iam\Iam.csproj" />
+    <ProjectReference Include="..\HostBase\HostBase.csproj" />
+  </ItemGroup>
+
+</Project>
