@@ -91,7 +91,7 @@ Argon2id 雜湊；登入失敗一律回傳單一通用錯誤（不形成使用�
 | Option（選項名維持英文） | Default（預設值） | Notes（說明） |
 |---|---|---|
 | `PropagationBoundSeconds` | 5（5 秒） | 傳播場景斷言的上限（測試可覆寫） |
-| `Transport` | InMemory | 擴展為多節點時換 Redis；介面不變 |
+| `Transport` | InMemory | 擴展為多節點時換 **Valkey**（BSD-3；Redis 8 起授權為 RSALv2/SSPL，違反本專案「禁已改為收費的工具」原則，`StackExchange.Redis` MIT 客端對 Valkey 相容）；介面不變 |
 | `WatcherInterval` | 1s（1 秒） | 匯流排傳輸無推送時的輪詢退路 |
 | `JwtTtlMinutes` | 5（5 分鐘） | 僅為兜底；claims 不是授權輸入 |
 | `EdgeTrustClaims` | false | 閘道不得僅憑 claims 放行 |
@@ -101,6 +101,36 @@ Argon2id 雜湊；登入失敗一律回傳單一通用錯誤（不形成使用�
 ### 8. Party modeling: global Party, per-tenant User, strict dedupe（Party 建模：Party 全域、User 按租戶、嚴格去重）
 
 自然人/組織為全域唯一 Party（證件元組精確去重，禁模糊合併開關——去重語意一動即醫療事故，不給運行時旋鈕）；登入帳號與角色按租戶掛載；地址/連絡人/證件掛 Party；同意授權為角色時間軸 append-only。Party 庫為租戶隔離的守衛例外：僅精確識別比對可達，不可列出或遍歷（`identity/party` spec）。人工合併流程 defer，本期不做。
+
+### 9. Bottom-layer toolchain selection table（底層工具選型總表）
+
+全部工具為 OSI 授權且未付費化，並遵守 ADR-010 接縫義務（contract-kept 分級）。本節為摘要；完整查證證據（license 驗證來源、套件內容實測）見 `docs/adr/012-toolchain-selection.md`。必須回避之已付費化工具：MediatR、AutoMapper、MassTransit（v9 起商業）、Redis 8（RSAL/SSPL）、Redpanda（BSL）、EPPlus（Polyform Noncommercial）、QuestPDF（source-available＋營收門檻）、iText（AGPL＋商業雙授權）、Vault（BSL, IBM）、MinIO（AGPL＋停止維護）、Moq（SponsorLink）、FluentAssertions v8（改用 fork `AwesomeAssertions`（Apache-2.0））、SpecFlow（停維；改用 fork `Reqnroll`）。
+
+| Seam / 用途 | 首選（授權） | Fallback（授權） | 接縫等級 |
+|---|---|---|---|
+| `ICommandBus` / `IEventBus` | Paramore Brighter / Darker（MIT） | CAP（MIT，outbox/saga 補位） | contract-kept |
+| 事件傳輸（.transport） | RabbitMQ（＋`RabbitMQ.Client` v7，Apache-2.0/MIT 雙授權） | Valkey＋輪詢退路 | contract-kept |
+| DTO/Entity 映射 | Riok.Mapperly（Apache-2.0，source-gen） | Mapster（MIT）、手寫 partial map | contract-kept |
+| 授權判定（enforcer） | Casbin / `casbin-dotnet`（Apache-2.0，Apache Foundation 孵化） | OPA（Apache-2.0） | contract-kept（G2：enforcer 住 Application） |
+| DTO 驗證 | FluentValidation（Apache-2.0） | DataAnnotations（內建）、Application 手寫規則驗證 | contract-kept |
+| Logging | Serilog（Apache-2.0）＋ OpenTelemetry（Apache-2.0） | NLog（BSD-3）、`Microsoft.Extensions.Logging`（MIT） | contract-kept |
+| Persistence | EF Core＋Npgsql（MIT，PostgreSQL 原生） | Dapper（Apache-2.0） | contract-kept｜替換＝major（ADR-010） |
+| 授權雜湊 | Konscious.Security.Cryptography.Argon2（Apache-2.0） | Isopoh.Cryptography.Argon2（MIT） | 模組測試守護 |
+| 快取 | Valkey＋`StackExchange.Redis`（MIT） | FusionCache / `HybridCache`（MIT） | contract-kept |
+| 背景作業 | Quartz.NET（Apache-2.0） | Hangfire Core（LGPL-3.0，商用免費已驗證） | contract-kept |
+| 物件儲存（S3 協定） | SeaweedFS（Apache-2.0） | Ceph（LGPL-2.1） | contract-kept |
+| 機密管理 | OpenBao（MPL-2.0） | 雲 KMS（需自包 port） | contract-kept |
+| HTTP client | Refit（MIT）＋`IHttpClientFactory`（MIT） | TypedClient 手寫 | contract-kept |
+| 韌性策略 | Polly（BSD-3）＋`Microsoft.Extensions.Resilience`（MIT） | 手寫 policy | contract-kept |
+| 檔案處理（Office） | DocumentFormat.OpenXml（MIT）；ClosedXML（MIT） | NPOI（Apache-2.0）、MiniExcel（Apache-2.0） | 模組用｜非架構接縫 |
+| 檔案處理（PDF） | PdfPig（Apache-2.0，讀）；PDFsharp（MIT，產生） | ExcelDataReader（MIT，唯讀 Excel） | 模組用｜非架構接縫 |
+| 時間處理 | NodaTime（Apache-2.0） | — | 模組用 |
+| OpenID Provider | OpenIddict（Apache-2.0）或 Keycloak（Apache-2.0） | — | Post-V1（決策見 `Open Questions`） |
+| 原始碼產生器 | Reqnroll source-gen；Mapperly | — | 無 runtime binding，換套件即換 |
+
+勝過：把選型留在對話（session 丟失即決策失憶，同 D4' 論證）；只寫工具名不記授權與證據（未來替換時重複全部調查）。調查含第二輪 license 查證與 nupkg 實測（案例：DataFusionSharp `runtimes/<rid>/native/` 已內含四平台組件，restore 即用、無額外部署步驟——「FFI＝部署複雜」是誤判，實質風險在單一維護者與 extension API 橋接缺口，詳見 `docs/adr/012-toolchain-selection.md`）。
+落 design：本節（spec 不收）；完整證據與排除清單落 `docs/adr/012-toolchain-selection.md`。
+
 
 ## Risks / Trade-offs
 

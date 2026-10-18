@@ -1,6 +1,6 @@
 # Design（設計）
 
-> 本 doc 以 grill-me 拷問（9 決策）經 Oracle 檢視修正後的 D1'–D9' 為本；規範條文落在 `specs/platform/architecture/spec.md` delta（新增 6 requirements），決策脈絡落在 `docs/adr/010-011`。平台層級結構圖：`c4-platform-architecture.drawio`（本目錄），術語以 `docs/glossary.md` 為準。
+> 本 doc 以 grill-me 拷問（9 決策）經 Oracle 檢視修正後的 D1'–D9' 為本，續加 D10'（歸檔工具鏈選型，out-of-slice 記錄）；規範條文落在 `specs/platform/architecture/spec.md` delta（新增 6 requirements），決策脈絡落在 `docs/adr/010-011`。平台層級結構圖：`c4-platform-architecture.drawio`（本目錄），術語以 `docs/glossary.md` 為準。
 
 ## Context（背景）
 
@@ -50,6 +50,15 @@
 
 **D9' 優先序（boundary-aware）**：架構契約內容的優先序為 spec > ADR > AGENTS.md；ADR 對不可斷言的 process discipline（發佈節奏、協作硬邊界）仍具規範性——修正是為不孤立 `docs/adr/004`（流程紀律另立於此）與 `008`（協作協議）的規範地位。
 勝過：全面「ADR 僅 rationale」（與現有 corpus 衝突）；ADR>spec（AI 接手時過時 ADR 抵銷新 spec）。落 spec：`Rule precedence`。
+
+**D10' 歷史資料歸檔工具鏈（out-of-slice 記錄）**：未來歸檔能力（大量 DB 查考歷史資料轉靜態檔以優化查詢）的技術選型現已定案記錄如下；實作屬 `archival-export` change（propose 之後另開），本變更不實作：
+- **靜態檔格式＝Parquet**（開放欄式格式）：引擎可替換而檔案不綁引擎，是「可替換原則」的基石。
+- **查詢引擎首選 DuckDB**（MIT，DuckDB Foundation 明文承諾永久 MIT、無企業版；.NET 經 `DuckDB.NET.Data` 1.5.6.1，MIT，ADO.NET＋EF Core 整合、原生支援 Parquet 讀寫、UDF／Catalog／Table providers 全齊）。
+- **Fallback＝DataFusionSharp**（Apache-2.0 綁定 Apache DataFusion）：授權合規、NuGet 已內含四平台 native FFI 組件（win-x64 native `datafusion_sharp_native.dll` ~133 MB，restore 即用、無額外部署步驟）；但**專案 2026-01 成立、單一維護者**，且經查證**三項功能缺口：❌ UDF 註冊、❌ Catalog 管理、❌ Table providers**——後果為：資料無法接物件儲存／分區目錄、查詢退回路徑字串拼接（注入風險＋脆弱）、業務函數無法下推而致 `CollectAsync` 全量回撈（列式掃描優勢歸零，違反歸檔初意）。三者皆 DataFusion 的 Rust extension API 面，FFI 直路未橋接所致。
+- **接縫定位**：歸檔匯出（`IArchiveExport`）與查詢（`IArchiveQueryEngine`）為新增 port，屬 contract-kept 等級（尚無第二實作，不升 swap-proven）；判定與遮蔽仍在 Application。
+- **保留路徑**：若「歸檔」僅為減輕 DB 負載而無獨立分析查詢需求，PostgreSQL 原生 partitioning＋`pg_partman` 可免引入第二引擎——屆時由 `archival-export` propose 定奪。
+勝過：現在就建（違 AGENTS.md「非當期 slice 只記錄、不實作」）；只記工具名不留缺口證據（交接時重蹈覆轍）。
+落 design：本節；spec 不收（propose `archival-export` 時才成 spec）。
 
 ## Risks / Trade-offs
 
