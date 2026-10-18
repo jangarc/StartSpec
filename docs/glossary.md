@@ -16,3 +16,13 @@
 | canonical exposure | canonical 暴露 | 每 use case 唯一的標準暴露，其他 Host 薄轉接 |
 | envelope | 信封 | 領域事件標準中繼資料（七欄） |
 | tombstone | 墓碑 | 下架／撤回事件，標記公開資料失效 |
+| swappable seam | 可替換接縫 | 公開支援替換的底層邊界（persistence／event transport／Host 組裝＋前端框架／auth） |
+| contract-kept | 契約維持 | 接縫預設義務：port contract tests＋fake＋ArchTests 不漂移 |
+| swap-proven | 替換已證 | 第二實作成真時的替換全驗義務 |
+| contract seedwork | 契約種子 | port contract tests 基底類與 SharedKernel port fake 的共住架構位 |
+| thin kernel | 薄核心 | SharedKernel＋橫切 ports＋事件信封基底＋模組准入規則；新商品 fork 的核心 |
+| product repo | 商品倉 | 一商品一倉；自帶 tenant 空間、`version.json` 與部署 |
+| kernel baseline | kernel 基線 | 跨商品倉的 kernel 共享基線；契約面僅加法、修復走排程 bump |
+| drift alarm | 分歧警報 | 商品倉 kernel 落後／分歧逾界時 CI 發出的警報 |
+| swap rehearsal | 替換演練 | 於 `Hosts.Dev` 先行演練替換並記錄 rollback note |
+| rule precedence | 規則優先序 | 架構契約內容 spec > ADR > AGENTS.md；process discipline 住 ADR |

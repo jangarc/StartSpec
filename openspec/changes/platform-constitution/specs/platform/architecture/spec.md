@@ -132,3 +132,77 @@ Every domain event SHALL carry the standard envelope (`event_id`, `occurred_at`,
 
 - **WHEN** a domain event is published（發佈領域事件）
 - **THEN** it carries the full standard envelope（其帶完整標準信封）
+
+### Requirement: Swappable seam catalog
+
+Four seams SHALL be maintained as publicly swappable: persistence (EF Core/Npgsql), event transport (`IEventBus`), Host composition plus frontend framework, and authentication technology. Each seam SHALL keep port contract tests, a fake implementation, and an ArchTests assertion; the default obligation is contract-kept, and full swap-proven duties SHALL be paid only when a second implementation becomes real. 平台 SHALL 維持四個公開可替換接縫：persistence（EF Core/Npgsql）、event transport（`IEventBus`）、Host 組裝與前端框架、認證技術；每接縫 SHALL 維持 port contract tests、fake 實作與 ArchTests 斷言；預設義務為 contract-kept，僅當第二實作成真才付 swap-proven 全驗義務。
+
+#### Scenario: Seam guards kept
+
+- **WHEN** a seam's port, fake, or contract suite drifts（接縫的 port、fake 或契約套件漂移）
+- **THEN** CI fails the build（CI 使建置失敗）
+
+#### Scenario: No speculative swap-proof
+
+- **WHEN** no second implementation is planned for a seam（接縫尚無第二實作計畫）
+- **THEN** only contract-kept duties apply（僅適用 contract-kept 義務）
+
+### Requirement: Swap acceptance and rehearsal
+
+A seam swap SHALL be accepted only when the port contract tests pass against the new implementation and the four CI gates are green on the new wiring; the swap SHALL be rehearsed in `Hosts.Dev` with contract and E2E suites green and a recorded rollback note. A persistence seam swap SHALL be a major version with schema and data migration notes. 接縫替換 SHALL 僅在新實作的 port contract tests 全綠且四閘門於新接線全綠時驗收；替換 SHALL 於 `Hosts.Dev` 演練（contract 與 E2E 套件綠），並記錄 rollback note；persistence 接縫替換 SHALL 定為 major 版本並附 schema 與資料遷移說明。
+
+#### Scenario: Swap rehearsed before rollout
+
+- **WHEN** a seam swap enters rollout（接縫替換進入 rollout）
+- **THEN** a `Hosts.Dev` rehearsal exists with contract and E2E suites green plus a rollback note（存在 `Hosts.Dev` 演練，其 contract 與 E2E 套件為綠且附 rollback note）
+
+#### Scenario: Persistence swap flagged major
+
+- **WHEN** the persistence seam is replaced（persistence 接縫被替換）
+- **THEN** a major version with schema and data migration notes is declared（宣告 major 版本並附 schema 與資料遷移說明）
+
+### Requirement: Contract seedwork admission
+
+Contract-test base classes and fakes SHALL live in the contract seedwork home. It SHALL admit only test-purpose plumbing — base classes for authoring port contract tests, fakes for ports declared by `SharedKernel`, and shared test fixtures; fakes for module-owned ports SHALL stay in module tests; business logic and production references SHALL NOT enter. Contract seedwork SHALL 只收：port contract tests 基底類、`SharedKernel` 已宣告 port 的 fake、共用測試器具；模組自有 port 的 fake 留在模組測試；業務邏輯與 production 引用禁入。
+
+#### Scenario: Seedwork creep rejected
+
+- **WHEN** a proposed addition is business logic or a module-owned fake（擬加入物為業務邏輯或模組自有 port 的 fake）
+- **THEN** review rejects it to its owning module or tests（審查退回所屬模組或其模組測試）
+
+### Requirement: Event delivery contract
+
+The `IEventBus` port contract SHALL specify at-least-once delivery and consumer idempotency as obligations; the in-memory fake SHALL simulate redelivery; port contract scenarios SHALL be derived from spec requirements, not from the first implementation. `IEventBus` 契約 SHALL 規定 at-least-once 傳遞與消費者冪等義務；in-memory fake SHALL 模擬重投遞；契約場景 SHALL 由 spec requirement 派生，不得由第一個實作反推。
+
+#### Scenario: Redelivery processed idempotently
+
+- **WHEN** the same event is delivered twice（同一事件被投遞兩次）
+- **THEN** each consumer processes it idempotently（各消費者均冪等處理）
+
+### Requirement: Product repo boundary and kernel baseline
+
+One product SHALL be one repository with its own tenant space, `version.json`, and deployment; this repo is product #1 and new products fork from the thin kernel. The thin kernel — `SharedKernel` plus cross-cutting ports, the event envelope base, and module admission rules — SHALL evolve on a shared baseline: its contract surface evolves additively, fixes flow via scheduled baseline bumps, divergence SHALL be bounded by a window with a CI drift alarm. 每商品 SHALL 一倉（自有 tenant 空間、`version.json` 與部署）；本倉即商品 #1，新商品自 thin kernel fork。Thin kernel（`SharedKernel`＋橫切 ports＋事件信封基底＋模組准入規則）SHALL 走共享基線：契約面僅加法演進，修復以排程 baseline bump 傳遞，分歧窗有界並掛 CI drift alarm。
+
+#### Scenario: Divergence alarmed
+
+- **WHEN** a product repo's kernel lags or diverges beyond the bounded window（商品倉的 kernel 落後或分歧超逾有界窗口）
+- **THEN** CI raises a drift alarm（CI 發出 drift alarm）
+
+#### Scenario: Party globality scoped per product
+
+- **WHEN** Party deduplication asserts global uniqueness（Party 去重主張全域唯一）
+- **THEN** the boundary is one product repository（其疆界為單一商品倉）
+
+### Requirement: Rule precedence
+
+For architecture contract content, the spec SHALL outrank ADRs, and ADRs SHALL outrank AGENTS.md; ADRs SHALL remain normative for process discipline that the spec cannot assert; AGENTS.md is an index only. All rules SHALL live in files (specs deltas, ADRs, AGENTS.md, glossary) as the handover carrier, and a rule stated only in conversation SHALL not be authoritative. 架構契約內容的優先序 SHALL 為 spec > ADR > AGENTS.md；spec 無法斷言的 process discipline 由 ADR 維持規範性；AGENTS.md 僅為索引。規則一律落檔（specs delta、ADR、AGENTS.md、glossary）作為交接載體；僅存於對話的規則 SHALL 不具裁決力。
+
+#### Scenario: Conflict resolved by rank
+
+- **WHEN** the spec and an ADR conflict on contract content（spec 與 ADR 就契約內容衝突）
+- **THEN** the spec governs（以 spec 為準）
+
+#### Scenario: Rule lives in files
+
+- **WHEN** a rule exists only in a conversation（規則僅存在於對話）
+- **THEN** it is not authoritative（其不具裁決力）
