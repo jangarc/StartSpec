@@ -1,0 +1,23 @@
+/* The styling layer contract (openspec config context): Tailwind maps design tokens ONLY.
+ * Utilities like bg-surface/text-primary/radius-medium resolve to --iam-* variables; raw color
+ * values are forbidden here (stylelint whitelist continues to guard any raw css).
+ * 樣式層契約：Tailwind 只映射 tokens；utilities 解析為 --iam-* 變數；此檔禁原始色值。
+ */
+@import 'tailwindcss';
+@import './tokens.css';
+
+@theme inline {
+  --color-surface: var(--iam-color-surface);
+  --color-surface-muted: var(--iam-color-surface-muted);
+  --color-border: var(--iam-color-border);
+  --color-text: var(--iam-color-text);
+  --color-text-muted: var(--iam-color-text-muted);
+  --color-primary: var(--iam-color-primary);
+  --color-primary-contrast: var(--iam-color-primary-contrast);
+  --color-danger: var(--iam-color-danger);
+  --radius-small: var(--iam-radius-small);
+  --radius-medium: var(--iam-radius-medium);
+  --text-body: var(--iam-font-size-body);
+  --text-caption: var(--iam-font-size-caption);
+  --text-heading: var(--iam-font-size-heading);
+}

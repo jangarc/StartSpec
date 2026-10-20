@@ -222,27 +222,27 @@ async function revokeAssignment(): Promise<void> {
 </script>
 
 <template>
-  <main class="shell">
-    <header class="shell-header">
-      <h1>IAM HQ</h1>
-      <span class="shell-org">HQ Admin</span>
+  <main class="min-h-screen bg-surface text-text text-body">
+    <header class="flex items-center justify-between gap-4 border-b border-border px-6 py-4">
+      <h1 class="m-0 text-heading font-semibold">IAM HQ</h1>
+      <span class="text-caption text-text-muted">HQ Admin</span>
     </header>
 
-    <section class="panel">
-      <h2 class="panel-title">工作階段（sign-in / refresh）</h2>
-      <div class="field-grid">
-        <iam-field label="租戶 ID"><input v-model="signInForm.tenantId" class="field-input" /></iam-field>
-        <iam-field label="登入名稱"><input v-model="signInForm.loginName" class="field-input" /></iam-field>
-        <iam-field label="密碼"><input v-model="signInForm.password" type="password" class="field-input" /></iam-field>
+    <section class="my-4 mx-6 grid gap-2 rounded-medium border border-border bg-surface-muted px-6 py-4">
+      <h2 class="m-0 text-heading font-semibold">工作階段（sign-in / refresh）</h2>
+      <div class="grid gap-2">
+        <iam-field label="租戶 ID"><input v-model="signInForm.tenantId" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
+        <iam-field label="登入名稱"><input v-model="signInForm.loginName" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
+        <iam-field label="密碼"><input v-model="signInForm.password" type="password" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
       </div>
-      <div class="row-actions">
+      <div class="flex items-center gap-2">
         <iam-button variant="primary" @iam-click="signIn">登入</iam-button>
         <iam-button variant="quiet" @iam-click="refreshSession">刷新權杖</iam-button>
       </div>
-      <p v-if="signInOutcome" :class="['outcome', signInOutcome.tone === 'ok' ? 'outcome-ok' : 'outcome-fail']">
+      <p v-if="signInOutcome" :class="['m-0', 'text-caption', signInOutcome.tone === 'ok' ? 'text-primary' : 'text-danger']">
         {{ signInOutcome.text }}
       </p>
-      <ul v-if="signedIn" class="session-list">
+      <ul v-if="signedIn" class="m-0 grid gap-2 p-0">
         <li>userId: {{ signedIn.userId }}</li>
         <li>partyId: {{ signedIn.partyId }}</li>
         <li>
@@ -253,63 +253,63 @@ async function revokeAssignment(): Promise<void> {
       </ul>
     </section>
 
-    <section class="panel">
-      <h2 class="panel-title">租戶（platform entry provision / organizations）</h2>
-      <div class="field-grid">
-        <iam-field label="新租戶 ID"><input v-model="tenantForm.tenantId" class="field-input" /></iam-field>
-        <iam-field label="新租戶名稱"><input v-model="tenantForm.tenantName" class="field-input" /></iam-field>
-        <iam-field label="初始組織名稱"><input v-model="tenantForm.initialOrganizationName" class="field-input" /></iam-field>
+    <section class="my-4 mx-6 grid gap-2 rounded-medium border border-border bg-surface-muted px-6 py-4">
+      <h2 class="m-0 text-heading font-semibold">租戶（platform entry provision / organizations）</h2>
+      <div class="grid gap-2">
+        <iam-field label="新租戶 ID"><input v-model="tenantForm.tenantId" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
+        <iam-field label="新租戶名稱"><input v-model="tenantForm.tenantName" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
+        <iam-field label="初始組織名稱"><input v-model="tenantForm.initialOrganizationName" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
       </div>
-      <div class="row-actions">
+      <div class="flex items-center gap-2">
         <iam-button variant="primary" @iam-click="provisionTenant">建立租戶</iam-button>
         <iam-button variant="quiet" @iam-click="loadOrganizations">列出組織（claims 範圍）</iam-button>
       </div>
-      <p v-if="tenantOutcome" :class="['outcome', tenantOutcome.tone === 'ok' ? 'outcome-ok' : 'outcome-fail']">
+      <p v-if="tenantOutcome" :class="['m-0', 'text-caption', tenantOutcome.tone === 'ok' ? 'text-primary' : 'text-danger']">
         {{ tenantOutcome.text }}
       </p>
-      <ul v-if="organizations.length > 0" class="org-list">
+      <ul v-if="organizations.length > 0" class="m-0 grid gap-2 p-0">
         <li v-for="name in organizations" :key="name">{{ name }}</li>
       </ul>
     </section>
 
-    <section class="panel">
-      <h2 class="panel-title">使用者驗證（user provision，作用租戶＝工作階段租戶）</h2>
-      <div class="field-grid">
-        <iam-field label="登入名稱"><input v-model="userForm.loginName" class="field-input" /></iam-field>
-        <iam-field label="顯示名稱"><input v-model="userForm.displayName" class="field-input" /></iam-field>
-        <iam-field label="證件類型"><input v-model="userForm.typeCode" class="field-input" /></iam-field>
-        <iam-field label="證件號碼"><input v-model="userForm.number" class="field-input" /></iam-field>
+    <section class="my-4 mx-6 grid gap-2 rounded-medium border border-border bg-surface-muted px-6 py-4">
+      <h2 class="m-0 text-heading font-semibold">使用者驗證（user provision，作用租戶＝工作階段租戶）</h2>
+      <div class="grid gap-2">
+        <iam-field label="登入名稱"><input v-model="userForm.loginName" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
+        <iam-field label="顯示名稱"><input v-model="userForm.displayName" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
+        <iam-field label="證件類型"><input v-model="userForm.typeCode" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
+        <iam-field label="證件號碼"><input v-model="userForm.number" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
       </div>
-      <div class="row-actions">
+      <div class="flex items-center gap-2">
         <iam-button variant="primary" @iam-click="provisionUser">建立使用者</iam-button>
       </div>
-      <p v-if="userOutcome" :class="['outcome', userOutcome.tone === 'ok' ? 'outcome-ok' : 'outcome-fail']">
+      <p v-if="userOutcome" :class="['m-0', 'text-caption', userOutcome.tone === 'ok' ? 'text-primary' : 'text-danger']">
         {{ userOutcome.text }}
       </p>
     </section>
 
-    <section class="panel">
-      <h2 class="panel-title">授權（role / assign / evaluate / revoke，作用租戶＝工作階段租戶）</h2>
-      <div class="field-grid">
-        <iam-field label="角色名稱"><input v-model="roleForm.name" class="field-input" /></iam-field>
-        <iam-field label="權限（逗號分隔）"><input v-model="roleForm.permissionsCsv" class="field-input" /></iam-field>
-        <iam-field label="roleId"><input v-model="assignForm.roleId" class="field-input" /></iam-field>
-        <iam-field label="userId"><input v-model="assignForm.userId" class="field-input" /></iam-field>
-        <iam-field label="評估權限 key"><input v-model="evaluationForm.permission" class="field-input" /></iam-field>
-        <iam-field label=" assignmentId（撤銷用）"><input v-model="revokeForm.assignmentId" class="field-input" /></iam-field>
+    <section class="my-4 mx-6 grid gap-2 rounded-medium border border-border bg-surface-muted px-6 py-4">
+      <h2 class="m-0 text-heading font-semibold">授權（role / assign / evaluate / revoke，作用租戶＝工作階段租戶）</h2>
+      <div class="grid gap-2">
+        <iam-field label="角色名稱"><input v-model="roleForm.name" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
+        <iam-field label="權限（逗號分隔）"><input v-model="roleForm.permissionsCsv" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
+        <iam-field label="roleId"><input v-model="assignForm.roleId" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
+        <iam-field label="userId"><input v-model="assignForm.userId" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
+        <iam-field label="評估權限 key"><input v-model="evaluationForm.permission" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
+        <iam-field label=" assignmentId（撤銷用）"><input v-model="revokeForm.assignmentId" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
       </div>
-      <div class="row-actions">
+      <div class="flex items-center gap-2">
         <iam-button variant="primary" @iam-click="provisionRole">建立角色</iam-button>
         <iam-button variant="primary" @iam-click="assignRole">指派角色</iam-button>
         <iam-button variant="quiet" @iam-click="evaluatePermission">評估權限</iam-button>
         <iam-button variant="danger" @iam-click="revokeAssignment">撤銷指派</iam-button>
       </div>
-      <p v-if="roleOutcome" :class="['outcome', roleOutcome.tone === 'ok' ? 'outcome-ok' : 'outcome-fail']">{{ roleOutcome.text }}</p>
-      <p v-if="assignOutcome" :class="['outcome', assignOutcome.tone === 'ok' ? 'outcome-ok' : 'outcome-fail']">{{ assignOutcome.text }}</p>
-      <p v-if="evaluationOutcome" :class="['outcome', evaluationOutcome.tone === 'ok' ? 'outcome-ok' : 'outcome-fail']">
+      <p v-if="roleOutcome" :class="['m-0', 'text-caption', roleOutcome.tone === 'ok' ? 'text-primary' : 'text-danger']">{{ roleOutcome.text }}</p>
+      <p v-if="assignOutcome" :class="['m-0', 'text-caption', assignOutcome.tone === 'ok' ? 'text-primary' : 'text-danger']">{{ assignOutcome.text }}</p>
+      <p v-if="evaluationOutcome" :class="['m-0', 'text-caption', evaluationOutcome.tone === 'ok' ? 'text-primary' : 'text-danger']">
         {{ evaluationOutcome.text }}
       </p>
-      <p v-if="revokeOutcome" :class="['outcome', revokeOutcome.tone === 'ok' ? 'outcome-ok' : 'outcome-fail']">{{ revokeOutcome.text }}</p>
+      <p v-if="revokeOutcome" :class="['m-0', 'text-caption', revokeOutcome.tone === 'ok' ? 'text-primary' : 'text-danger']">{{ revokeOutcome.text }}</p>
     </section>
   </main>
 </template>
