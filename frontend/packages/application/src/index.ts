@@ -5,3 +5,4 @@
  */
 export { type AuthPort, type RefreshInput, type RefreshRejection, type SessionTokens, type SignInInput, type SignInOutput, type SignInRejection } from './ports/auth';
 export { type HttpPort, type HttpPortRequest, type HttpPortRequestMethod, type HttpPortResponse } from './ports/http';
+export { THEME_NAMES, type ThemeName, type ThemePort } from './ports/theme';

@@ -17,6 +17,14 @@ describe('<IamButton>', () => {
     expect(wrapper.emitted('iam-click')).toBeUndefined();
   });
 
+  it('loading suppresses activation, marks aria-busy and lights the pending chrome', async () => {
+    const wrapper = mount(IamButton, { props: { loading: true }, slots: { default: '處理中' } });
+    expect(wrapper.find('button').attributes('aria-busy')).toBe('true');
+    expect(wrapper.find('button').classes()).toContain('ds-btn-loading');
+    await wrapper.find('button').trigger('click');
+    expect(wrapper.emitted('iam-click')).toBeUndefined();
+  });
+
   it('composes tone / outline / size classes via the core helper', () => {
     const danger = mount(IamButton, { props: { variant: 'danger' } });
     expect(danger.find('button').classes()).toEqual(expect.arrayContaining(['ds-btn', 'ds-btn-danger']));

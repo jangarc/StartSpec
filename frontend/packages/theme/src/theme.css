@@ -7,4 +7,6 @@
 @import './tokens.css';
 @import './semantic.css';
 @import './integrations/tailwind.css';
+@import './themes/dark.css';
+@import './themes/synthwave.css';
 @import './kit.css';

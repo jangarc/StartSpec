@@ -5,6 +5,8 @@
   "exports": {
     "./tokens.css": "./src/tokens.css",
     "./semantic.css": "./src/semantic.css",
+    "./themes/dark.css": "./src/themes/dark.css",
+    "./themes/synthwave.css": "./src/themes/synthwave.css",
     "./kit.css": "./src/kit.css",
     "./theme.css": "./src/theme.css"
   },

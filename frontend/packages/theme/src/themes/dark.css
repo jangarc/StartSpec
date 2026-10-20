@@ -1,0 +1,16 @@
+/**
+ * Theme: dark — overrides the SEMANTIC layer only (purpose aliases over dark primitives);
+ * primitives themselves stay gang-s meaning-named (surface/text describe PURPOSE, not data):
+ * theme switching edits this file (or adds a sibling) — component code untouched (swap principle).
+ * 暗色主題：只覆寫語義層；元件零改動（換膚＝?語義組合根）。
+ */
+[data-theme='dark'] {
+  --iam-color-surface: var(--iam-slate-950);
+  --iam-color-surface-muted: var(--iam-slate-800);
+  --iam-color-border: var(--iam-slate-700);
+  --iam-color-text: var(--iam-ink-100);
+  --iam-color-text-muted: var(--iam-ink-400);
+  --iam-tone-secondary: var(--iam-slate-700);
+  --iam-tone-secondary-strong: var(--iam-ink-400);
+  --iam-tone-secondary-contrast: var(--iam-ink-100);
+}

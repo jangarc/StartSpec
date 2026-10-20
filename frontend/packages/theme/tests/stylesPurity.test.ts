@@ -82,6 +82,29 @@ describe('kit tone coverage (every IamTone has a base class)', () => {
   });
 });
 
+describe('theme palettes (dark/synthwave override the semantic layer only)', () => {
+  const THEMES: ReadonlyArray<[string, string]> = [['dark', 'dark.css'], ['synthwave', 'synthwave.css']];
+
+  for (const [name, file] of THEMES) {
+    it(`${name} theme file exists and rides the data-theme attribute`, () => {
+      const css = readFileSync(path.join(baseDir, 'themes', file), 'utf8');
+      expect(css.includes(`[data-theme='${name}']`)).toBe(true);
+    });
+
+    it(`${name} palette defines surfaces/text (definition layer: raw literals allowed here only)`, () => {
+      const css = readFileSync(path.join(baseDir, 'themes', file), 'utf8');
+      expect(css.includes('--iam-color-surface:')).toBe(true);
+      expect(css.includes('--iam-color-text:')).toBe(true);
+    });
+  }
+
+  it('theme.css composes both palettes', () => {
+    const root = readFileSync(path.join(baseDir, 'theme.css'), 'utf8');
+    expect(root.includes('./themes/dark.css')).toBe(true);
+    expect(root.includes('./themes/synthwave.css')).toBe(true);
+  });
+});
+
 describe('kit structure the presenters rely on', () => {
   it('btn outline mode + sizes exist with their state pattern', () => {
     const css = btnCss();
@@ -89,6 +112,28 @@ describe('kit structure the presenters rely on', () => {
     expect(css.includes('.ds-btn-outline:hover')).toBe(true);
     expect(css.includes('.ds-btn-sm {')).toBe(true);
     expect(css.includes('.ds-btn-lg {')).toBe(true);
+  });
+
+  it('control focus rings exist (a11y base: btn tone-aware + field)', () => {
+    expect(btnCss().includes('.ds-btn:focus-visible')).toBe(true);
+    expect(readFileSync(path.join(baseDir, 'components', 'ds-field.css'), 'utf8').includes('.ds-field-input:focus-visible')).toBe(true);
+  });
+
+  it('btn loading chrome exists (async pending state)', () => {
+    expect(btnCss().includes('.ds-btn-loading')).toBe(true);
+  });
+
+  it('page furniture exists (page-title scale backed by tokens)', () => {
+    const page = readFileSync(path.join(baseDir, 'components', 'ds-page.css'), 'utf8');
+    expect(page.includes('.ds-page-title {')).toBe(true);
+    expect(page.includes('var(--iam-font-size-page)')).toBe(true);
+    expect(semanticCss().includes('--iam-font-size-page:')).toBe(true);
+  });
+
+  it('kit css carries no legacy iam-* component classes (zombie guard)', () => {
+    const files = ['ds-btn.css', 'ds-card.css', 'ds-field.css', 'ds-alert.css', 'ds-page.css'];
+    const zombies = files.filter((file) => readFileSync(path.join(baseDir, 'components', file), 'utf8').includes('.iam-'));
+    expect(zombies).toEqual([]);
   });
 
   it('card header/footer regions + outline mode exist', () => {

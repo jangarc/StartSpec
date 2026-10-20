@@ -20,6 +20,8 @@ export interface IamButtonProps {
   readonly outline?: boolean | undefined;
   readonly size?: IamButtonSize | undefined;
   readonly disabled?: boolean | undefined;
+  /** Async in-flight flag: suppresses activation and lights the pending chrome (not disable-never). */
+  readonly loading?: boolean | undefined;
 }
 
 /** The full class list a presenter must apply（class 組合的唯一真相——presenter 不自行拼接）。 */
@@ -31,10 +33,13 @@ export function buttonClasses(props: IamButtonProps): string {
   if (props.size) {
     parts.push(`ds-btn-${props.size}`);
   }
+  if (props.loading === true) {
+    parts.push('ds-btn-loading');
+  }
   return parts.filter((part) => part.length > 0).join(' ');
 }
 
-/** A disabled button never activates（disabled 即禁觸發——presenter 也必須遵守）。 */
+/** A disabled or in-flight button never activates（停用或進行中的按鈕禁觸發——presenter 也必須遵守）。 */
 export function activationSuppressed(props: IamButtonProps): boolean {
-  return props.disabled === true;
+  return props.disabled === true || props.loading === true;
 }

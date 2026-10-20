@@ -1,0 +1,10 @@
+/**
+ * kit: ds-page — page-level furniture (page title scale); one token step above card titles.
+ * 頁面層 kit class：頁面標題尺度；高卡片標題一階。
+ */
+.ds-page-title {
+  margin: 0;
+  font-size: var(--iam-font-size-page);
+  font-weight: var(--iam-font-weight-semibold);
+  color: var(--iam-color-text);
+}

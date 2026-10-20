@@ -1,0 +1,35 @@
+/**
+ * Theme: synthwave — deep-violet night sky + neon accents; overrides the semantic layer only
+ * (primary becomes neon pink; info/success/warning go neon while staying readable).
+ * synthwave 主題：深靛底＋霓虹主色；僅覆寫語義層、元件零改動。
+ */
+[data-theme='synthwave'] {
+  --iam-color-surface: var(--iam-violet-950);
+  --iam-color-surface-muted: var(--iam-violet-900);
+  --iam-color-border: var(--iam-violet-800);
+  --iam-color-text: var(--iam-lavender-200);
+  --iam-color-text-muted: var(--iam-lavender-400);
+  --iam-color-primary: var(--iam-neon-pink-600);
+  --iam-color-primary-strong: var(--iam-neon-pink-700);
+  --iam-color-primary-contrast: var(--iam-white);
+  --iam-tone-danger: var(--iam-color-danger);
+  --iam-tone-danger-strong: var(--iam-color-danger-strong);
+  --iam-tone-secondary: var(--iam-violet-800);
+  --iam-tone-secondary-strong: var(--iam-neon-pink-600);
+  --iam-tone-secondary-contrast: var(--iam-lavender-200);
+  --iam-tone-success: var(--iam-neon-teal-600);
+  --iam-tone-success-strong: var(--iam-neon-teal-700);
+  --iam-tone-success-contrast: var(--iam-white);
+  --iam-tone-warning: var(--iam-neon-yellow-600);
+  --iam-tone-warning-strong: var(--iam-amber-700);
+  --iam-tone-warning-contrast: var(--iam-violet-950);
+  --iam-tone-info: var(--iam-neon-cyan-600);
+  --iam-tone-info-strong: var(--iam-neon-cyan-700);
+  --iam-tone-info-contrast: var(--iam-violet-950);
+  --iam-tone-light: var(--iam-lavender-200);
+  --iam-tone-light-strong: var(--iam-lavender-400);
+  --iam-tone-light-contrast: var(--iam-violet-950);
+  --iam-tone-dark: var(--iam-violet-900);
+  --iam-tone-dark-strong: var(--iam-violet-800);
+  --iam-tone-dark-contrast: var(--iam-lavender-200);
+}

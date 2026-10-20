@@ -17,7 +17,7 @@ function onClick(): void {
 </script>
 
 <template>
-  <button type="button" :class="classes" :disabled="props.disabled" @click="onClick">
+  <button type="button" :class="classes" :disabled="props.disabled || props.loading" :aria-busy="props.loading ? 'true' : undefined" @click="onClick">
     <slot />
   </button>
 </template>

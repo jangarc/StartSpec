@@ -20,6 +20,27 @@
   --iam-sky-600: #0e7490;
   --iam-sky-700: #0b5d73;
 
+  /* dark palette primitives（slate/ink：暗色與文字） */
+  --iam-slate-700: #334155;
+  --iam-slate-800: #1e293b;
+  --iam-slate-950: #0a0f1e;
+  --iam-ink-100: #e2e8f0;
+  --iam-ink-400: #94a3b8;
+
+  /* synthwave primitives（violet/neon：深靛夜空＋霓虹） */
+  --iam-violet-800: #4c1d95;
+  --iam-violet-900: #251245;
+  --iam-violet-950: #120b2e;
+  --iam-neon-pink-600: #ff2f92;
+  --iam-neon-pink-700: #d61f7a;
+  --iam-neon-cyan-600: #22d3ee;
+  --iam-neon-cyan-700: #0ea5c4;
+  --iam-neon-teal-600: #14b8a6;
+  --iam-neon-teal-700: #0f9488;
+  --iam-neon-yellow-600: #fbbf24;
+  --iam-lavender-200: #e9d8f2;
+  --iam-lavender-400: #c4b5fd;
+
   --iam-space-1: 4px;
   --iam-space-2: 8px;
   --iam-space-4: 16px;
@@ -29,6 +50,7 @@
   --iam-font-12: 12px;
   --iam-font-14: 14px;
   --iam-font-18: 18px;
+  --iam-font-24: 24px;
   --iam-weight-regular: 400;
   --iam-weight-semibold: 600;
 }

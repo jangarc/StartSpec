@@ -18,6 +18,16 @@
   color: var(--iam-color-text);
 }
 
+.ds-field-input:hover:not([disabled]) {
+  border-color: var(--iam-color-text-muted);
+}
+
+/* keyboard focus ring (a11y base): tone-colored, off the element edge */
+.ds-field-input:focus-visible {
+  outline: 2px solid var(--iam-color-primary);
+  outline-offset: 2px;
+}
+
 .ds-field-alert {
   font-size: var(--iam-font-size-caption);
 }

@@ -51,6 +51,7 @@
   --iam-font-size-caption: var(--iam-font-12);
   --iam-font-size-body: var(--iam-font-14);
   --iam-font-size-heading: var(--iam-font-18);
+  --iam-font-size-page: var(--iam-font-24);
   --iam-font-weight-regular: var(--iam-weight-regular);
   --iam-font-weight-semibold: var(--iam-weight-semibold);
 }

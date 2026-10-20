@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { IamButton, IamCard, IamField } from '@startspec/vue';
 import { isAccessUsable } from '@startspec/domain';
 import type { SessionTokens } from '@startspec/application';
 import type { WorkingSession } from '@startspec/domain';
 import { createApiAuthPort } from './adapters/apiAuthPort';
+import { createBrowserThemePort } from './adapters/browserThemePort';
+import { type ThemeName } from '@startspec/application';
+import { watch } from 'vue';
 import { createFetchHttpPort } from './adapters/httpFetchPort';
 
 const http = createFetchHttpPort(() => signedIn.value?.tokens.accessToken ?? null);
@@ -18,6 +21,17 @@ interface Outcome {
 const ok = (text: string): Outcome => ({ tone: 'ok', text });
 const fail = (text: string): Outcome => ({ tone: 'fail', text });
 const messageOf = (error: unknown): string => (error instanceof Error ? error.message : 'unknown_error');
+
+const busy = reactive<Record<string, boolean>>({});
+
+async function tracked(name: string, action: () => Promise<void>): Promise<void> {
+  busy[name] = true;
+  try {
+    await action();
+  } finally {
+    busy[name] = false;
+  }
+}
 
 function decodeJwtExp(token: string): number {
   const payload = token.split('.')[1] ?? '';
@@ -34,12 +48,17 @@ interface SignedInState {
 }
 
 const signedIn = ref<SignedInState | null>(null);
+const identityLabel = computed(() => (signedIn.value === null ? '未登入' : `${signedIn.value.session.loginName}＠${sessionTenant.value}`));
+const themePort = createBrowserThemePort();
+const themeName = ref<ThemeName>(themePort.current());
+themePort.apply(themeName.value);
+watch(themeName, (next) => themePort.apply(next));
 
 const signInForm = reactive({ tenantId: 'hq', loginName: 'admin', password: '' });
 const signInOutcome = ref<Outcome | null>(null);
 const sessionTenant = ref('');
 
-async function signIn(): Promise<void> {
+async function doSignIn(): Promise<void> {
   try {
     const output = await auth.signIn({ ...signInForm });
     const session: WorkingSession = {
@@ -55,7 +74,11 @@ async function signIn(): Promise<void> {
   }
 }
 
-async function refreshSession(): Promise<void> {
+function signIn(): Promise<void> {
+  return tracked('signIn', doSignIn);
+}
+
+async function doRefresh(): Promise<void> {
   if (signedIn.value === null) {
     signInOutcome.value = fail('尚未登入');
     return;
@@ -69,11 +92,15 @@ async function refreshSession(): Promise<void> {
   }
 }
 
+function refreshSession(): Promise<void> {
+  return tracked('refresh', doRefresh);
+}
+
 const tenantForm = reactive({ tenantId: '', tenantName: '', initialOrganizationName: '' });
 const tenantOutcome = ref<Outcome | null>(null);
 const organizations = ref<string[]>([]);
 
-async function provisionTenant(): Promise<void> {
+async function doProvisionTenant(): Promise<void> {
   try {
     const response = await http.send<{ tenantId: string; organizationId: string; title?: string }>({
       method: 'POST',
@@ -94,7 +121,11 @@ async function provisionTenant(): Promise<void> {
   }
 }
 
-async function loadOrganizations(): Promise<void> {
+function provisionTenant(): Promise<void> {
+  return tracked('provisionTenant', doProvisionTenant);
+}
+
+async function doLoadOrganizations(): Promise<void> {
   try {
     const response = await http.send<{ items: { organizationId: string; name: string }[]; hasNext: boolean; title?: string }>({
       method: 'GET',
@@ -112,10 +143,14 @@ async function loadOrganizations(): Promise<void> {
   }
 }
 
+function loadOrganizations(): Promise<void> {
+  return tracked('loadOrganizations', doLoadOrganizations);
+}
+
 const userForm = reactive({ loginName: '', displayName: '', typeCode: 'id-card', number: '' });
 const userOutcome = ref<Outcome | null>(null);
 
-async function provisionUser(): Promise<void> {
+async function doProvisionUser(): Promise<void> {
   try {
     const response = await http.send<{ userId: string; partyId: string; title?: string }>({
       method: 'POST',
@@ -137,12 +172,16 @@ async function provisionUser(): Promise<void> {
   }
 }
 
+function provisionUser(): Promise<void> {
+  return tracked('provisionUser', doProvisionUser);
+}
+
 const roleForm = reactive({ name: '', permissionsCsv: '' });
 const roleOutcome = ref<Outcome | null>(null);
 const assignForm = reactive({ roleId: '', userId: '' });
 const assignOutcome = ref<Outcome | null>(null);
 
-async function provisionRole(): Promise<void> {
+async function doProvisionRole(): Promise<void> {
   try {
     const permissions = roleForm.permissionsCsv.split(',').map((entry) => entry.trim()).filter((entry) => entry.length > 0);
     const response = await http.send<{ roleId: string; title?: string }>({
@@ -161,7 +200,11 @@ async function provisionRole(): Promise<void> {
   }
 }
 
-async function assignRole(): Promise<void> {
+function provisionRole(): Promise<void> {
+  return tracked('provisionRole', doProvisionRole);
+}
+
+async function doAssignRole(): Promise<void> {
   try {
     const response = await http.send<{ assignmentId: string; title?: string }>({
       method: 'POST',
@@ -179,11 +222,15 @@ async function assignRole(): Promise<void> {
   }
 }
 
+function assignRole(): Promise<void> {
+  return tracked('assignRole', doAssignRole);
+}
+
 const evaluationForm = reactive({ permission: '' });
 const evaluationOutcome = ref<Outcome | null>(null);
 const evaluationResult = ref<null | boolean>(null);
 
-async function evaluatePermission(): Promise<void> {
+async function doEvaluate(): Promise<void> {
   try {
     const response = await http.send<{ allowed: boolean; title?: string }>({
       method: 'POST',
@@ -202,10 +249,14 @@ async function evaluatePermission(): Promise<void> {
   }
 }
 
+function evaluatePermission(): Promise<void> {
+  return tracked('evaluate', doEvaluate);
+}
+
 const revokeForm = reactive({ assignmentId: '' });
 const revokeOutcome = ref<Outcome | null>(null);
 
-async function revokeAssignment(): Promise<void> {
+async function doRevoke(): Promise<void> {
   try {
     const response = await http.send<{ title?: string }>({
       method: 'DELETE',
@@ -220,93 +271,110 @@ async function revokeAssignment(): Promise<void> {
     revokeOutcome.value = fail(messageOf(error));
   }
 }
+
+function revokeAssignment(): Promise<void> {
+  return tracked('revoke', doRevoke);
+}
 </script>
 
 <template>
   <main class="min-h-screen bg-surface text-text text-body">
     <header class="flex items-center justify-between gap-4 border-b border-border px-6 py-4">
-      <h1 class="ds-card-title">IAM HQ</h1>
-      <span class="text-caption text-text-muted">HQ Admin</span>
+      <h1 class="ds-page-title">IAM HQ</h1>
+      <div class="flex items-center gap-4">
+        <IamField label="主題"><select v-model="themeName" class="ds-field-input" aria-label="主題">
+            <option value="light">Bright</option>
+            <option value="dark">Dark</option>
+            <option value="synthwave">Synthwave</option>
+          </select></IamField>
+        <span class="text-caption" :class="signedIn ? 'text-primary' : 'text-text-muted'">{{ identityLabel }}</span>
+      </div>
     </header>
 
-    <IamCard title="工作階段（sign-in / refresh）" class="mx-6 my-4 grid gap-2">
-      <div class="grid gap-2">
-        <IamField label="租戶 ID"><input v-model="signInForm.tenantId" class="ds-field-input w-full" /></IamField>
-        <IamField label="登入名稱"><input v-model="signInForm.loginName" class="ds-field-input w-full" /></IamField>
-        <IamField label="密碼"><input v-model="signInForm.password" type="password" class="ds-field-input w-full" /></IamField>
-      </div>
-      <div class="flex items-center gap-2">
-        <IamButton variant="primary" @iam-click="signIn">登入</IamButton>
-        <IamButton variant="secondary" @iam-click="refreshSession">刷新權杖</IamButton>
-      </div>
-      <p v-if="signInOutcome" :class="[signInOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">
-        {{ signInOutcome.text }}
-      </p>
-      <ul v-if="signedIn" class="m-0 grid gap-2 p-0">
-        <li>userId: {{ signedIn.userId }}</li>
-        <li>partyId: {{ signedIn.partyId }}</li>
-        <li>
-          權杖到期: {{ new Date(signedIn.session.accessExpiresAtMillis).toISOString() }}（
-          {{ isAccessUsable(signedIn.session, Date.now()) ? '可用' : '已逾期' }}）
-        </li>
-        <li>作用租戶（範圍自驗證 claims 解析，不送租戶標頭）: {{ sessionTenant }}</li>
-      </ul>
-    </IamCard>
+    <div class="mx-auto grid max-w-5xl gap-4 px-6 py-6 lg:grid-cols-2">
+      <IamCard title="工作階段（sign-in / refresh）" class="grid gap-2">
+        <div class="grid gap-2">
+          <IamField label="租戶 ID"><input v-model="signInForm.tenantId" class="ds-field-input w-full" /></IamField>
+          <IamField label="登入名稱"><input v-model="signInForm.loginName" class="ds-field-input w-full" /></IamField>
+          <IamField label="密碼"><input v-model="signInForm.password" type="password" class="ds-field-input w-full" /></IamField>
+        </div>
+        <div class="flex items-center gap-2">
+          <IamButton variant="primary" :loading="busy.signIn" @iam-click="signIn">登入</IamButton>
+          <IamButton variant="secondary" :loading="busy.refresh" @iam-click="refreshSession">刷新權杖</IamButton>
+        </div>
+        <p v-if="signInOutcome" :class="[signInOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">
+          {{ signInOutcome.text }}
+        </p>
+        <ul v-if="signedIn" class="m-0 grid gap-2 p-0">
+          <li>userId: {{ signedIn.userId }}</li>
+          <li>partyId: {{ signedIn.partyId }}</li>
+          <li>
+            權杖到期: {{ new Date(signedIn.session.accessExpiresAtMillis).toISOString() }}（
+            {{ isAccessUsable(signedIn.session, Date.now()) ? '可用' : '已逾期' }}）
+          </li>
+          <li>作用租戶（範圍自驗證 claims 解析，不送租戶標頭）: {{ sessionTenant }}</li>
+        </ul>
+      </IamCard>
 
-    <IamCard title="租戶（platform entry provision / organizations）" class="mx-6 my-4 grid gap-2">
-      <div class="grid gap-2">
-        <IamField label="新租戶 ID"><input v-model="tenantForm.tenantId" class="ds-field-input w-full" /></IamField>
-        <IamField label="新租戶名稱"><input v-model="tenantForm.tenantName" class="ds-field-input w-full" /></IamField>
-        <IamField label="初始組織名稱"><input v-model="tenantForm.initialOrganizationName" class="ds-field-input w-full" /></IamField>
-      </div>
-      <div class="flex items-center gap-2">
-        <IamButton variant="primary" @iam-click="provisionTenant">建立租戶</IamButton>
-        <IamButton variant="secondary" @iam-click="loadOrganizations">列出組織（claims 範圍）</IamButton>
-      </div>
-      <p v-if="tenantOutcome" :class="[tenantOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">
-        {{ tenantOutcome.text }}
-      </p>
-      <ul v-if="organizations.length > 0" class="m-0 grid gap-2 p-0">
-        <li v-for="name in organizations" :key="name">{{ name }}</li>
-      </ul>
-    </IamCard>
+      <IamCard title="租戶（platform entry provision / organizations）" class="grid gap-2">
+        <div class="grid gap-2">
+          <IamField label="新租戶 ID"><input v-model="tenantForm.tenantId" class="ds-field-input w-full" /></IamField>
+          <IamField label="新租戶名稱"><input v-model="tenantForm.tenantName" class="ds-field-input w-full" /></IamField>
+          <IamField label="初始組織名稱"><input v-model="tenantForm.initialOrganizationName" class="ds-field-input w-full" /></IamField>
+        </div>
+        <div class="flex items-center gap-2">
+          <IamButton variant="primary" :loading="busy.provisionTenant" @iam-click="provisionTenant">建立租戶</IamButton>
+          <IamButton variant="secondary" :loading="busy.loadOrganizations" @iam-click="loadOrganizations">列出組織（claims 範圍）</IamButton>
+        </div>
+        <p v-if="tenantOutcome" :class="[tenantOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">
+          {{ tenantOutcome.text }}
+        </p>
+        <ul v-if="organizations.length > 0" class="m-0 grid gap-2 p-0">
+          <li v-for="name in organizations" :key="name">{{ name }}</li>
+        </ul>
+      </IamCard>
 
-    <IamCard title="使用者驗證（user provision，作用租戶＝工作階段租戶）" class="mx-6 my-4 grid gap-2">
-      <div class="grid gap-2">
-        <IamField label="登入名稱"><input v-model="userForm.loginName" class="ds-field-input w-full" /></IamField>
-        <IamField label="顯示名稱"><input v-model="userForm.displayName" class="ds-field-input w-full" /></IamField>
-        <IamField label="證件類型"><input v-model="userForm.typeCode" class="ds-field-input w-full" /></IamField>
-        <IamField label="證件號碼"><input v-model="userForm.number" class="ds-field-input w-full" /></IamField>
-      </div>
-      <div class="flex items-center gap-2">
-        <IamButton variant="primary" @iam-click="provisionUser">建立使用者</IamButton>
-      </div>
-      <p v-if="userOutcome" :class="[userOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">
-        {{ userOutcome.text }}
-      </p>
-    </IamCard>
+      <IamCard title="使用者驗證（user provision，作用租戶＝工作階段租戶）" class="grid gap-2">
+        <div class="grid gap-2">
+          <IamField label="登入名稱"><input v-model="userForm.loginName" class="ds-field-input w-full" /></IamField>
+          <IamField label="顯示名稱"><input v-model="userForm.displayName" class="ds-field-input w-full" /></IamField>
+          <IamField label="證件類型"><input v-model="userForm.typeCode" class="ds-field-input w-full" /></IamField>
+          <IamField label="證件號碼"><input v-model="userForm.number" class="ds-field-input w-full" /></IamField>
+        </div>
+        <div class="flex items-center gap-2">
+          <IamButton variant="primary" :loading="busy.provisionUser" @iam-click="provisionUser">建立使用者</IamButton>
+        </div>
+        <p v-if="userOutcome" :class="[userOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">
+          {{ userOutcome.text }}
+        </p>
+      </IamCard>
 
-    <IamCard title="授權（role / assign / evaluate / revoke，作用租戶＝工作階段租戶）" class="mx-6 my-4 grid gap-2">
-      <div class="grid gap-2">
-        <IamField label="角色名稱"><input v-model="roleForm.name" class="ds-field-input w-full" /></IamField>
-        <IamField label="權限（逗號分隔）"><input v-model="roleForm.permissionsCsv" class="ds-field-input w-full" /></IamField>
-        <IamField label="roleId"><input v-model="assignForm.roleId" class="ds-field-input w-full" /></IamField>
-        <IamField label="userId"><input v-model="assignForm.userId" class="ds-field-input w-full" /></IamField>
-        <IamField label="評估權限 key"><input v-model="evaluationForm.permission" class="ds-field-input w-full" /></IamField>
-        <IamField label=" assignmentId（撤銷用）"><input v-model="revokeForm.assignmentId" class="ds-field-input w-full" /></IamField>
-      </div>
-      <div class="flex items-center gap-2">
-        <IamButton variant="primary" @iam-click="provisionRole">建立角色</IamButton>
-        <IamButton variant="primary" @iam-click="assignRole">指派角色</IamButton>
-        <IamButton variant="secondary" @iam-click="evaluatePermission">評估權限</IamButton>
-        <IamButton variant="danger" @iam-click="revokeAssignment">撤銷指派</IamButton>
-      </div>
-      <p v-if="roleOutcome" :class="[roleOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">{{ roleOutcome.text }}</p>
-      <p v-if="assignOutcome" :class="[assignOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">{{ assignOutcome.text }}</p>
-      <p v-if="evaluationOutcome" :class="[evaluationOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">
-        {{ evaluationOutcome.text }}
-      </p>
-      <p v-if="revokeOutcome" :class="[revokeOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">{{ revokeOutcome.text }}</p>
-    </IamCard>
+      <IamCard title="授權（role / assign / evaluate / revoke，作用租戶＝工作階段租戶）" class="grid gap-2">
+        <div class="grid gap-2">
+          <IamField label="角色名稱"><input v-model="roleForm.name" class="ds-field-input w-full" /></IamField>
+          <IamField label="權限（逗號分隔）"><input v-model="roleForm.permissionsCsv" class="ds-field-input w-full" /></IamField>
+          <IamField label="roleId"><input v-model="assignForm.roleId" class="ds-field-input w-full" /></IamField>
+          <IamField label="userId"><input v-model="assignForm.userId" class="ds-field-input w-full" /></IamField>
+        </div>
+        <div class="flex items-center gap-2">
+          <IamButton variant="primary" :loading="busy.provisionRole" @iam-click="provisionRole">建立角色</IamButton>
+          <IamButton variant="primary" :loading="busy.assignRole" @iam-click="assignRole">指派角色</IamButton>
+        </div>
+        <p v-if="roleOutcome" :class="[roleOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">{{ roleOutcome.text }}</p>
+        <p v-if="assignOutcome" :class="[assignOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">{{ assignOutcome.text }}</p>
+        <div class="grid gap-2">
+          <IamField label="評估權限 key"><input v-model="evaluationForm.permission" class="ds-field-input w-full" /></IamField>
+          <IamField label=" assignmentId（撤銷用）"><input v-model="revokeForm.assignmentId" class="ds-field-input w-full" /></IamField>
+          <div class="flex items-center gap-2">
+            <IamButton variant="secondary" :loading="busy.evaluate" @iam-click="evaluatePermission">評估權限</IamButton>
+            <IamButton variant="danger" :loading="busy.revoke" @iam-click="revokeAssignment">撤銷指派</IamButton>
+          </div>
+          <p v-if="evaluationOutcome" :class="[evaluationOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">
+            {{ evaluationOutcome.text }}
+          </p>
+          <p v-if="revokeOutcome" :class="[revokeOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">{{ revokeOutcome.text }}</p>
+        </div>
+      </IamCard>
+    </div>
   </main>
 </template>
