@@ -40,6 +40,7 @@ context: |
 rules:
   proposal:
     - Must use grill-me skill
+    - Must use ui-ux-pro-max skill
     # - Must use adversarial-authoring skill
     # - Must use glossary skill
   design:

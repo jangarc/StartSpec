@@ -39,16 +39,16 @@
 
 ## 7. 前端分層（Frontend layers，F2 殼結構）
 
-- [ ] 7.1 搭建 workspace：共用包 `domain/`、`application/ports/`、`components/`、`theme/tokens.css`、`shell/`＋應用殼 `apps/hq`、`apps/store`（`apps/consumer` 空殼佔位），各 app 宣告封裝目標（Web 先行），驗證：`npm run build` 全應用成功
-- [ ] 7.2 實作純 TS domain（工作階段、租戶範圍、權限判定）與 vitest 單元測試（純 Node 無 DOM），零框架引入且 port 簽名無框架型別，驗證：`npm run test` 通過
-- [ ] 7.3 實作展示型 `components`（僅 props/events 通訊、不碰 store/router、樣式只吃 tokens）與元件測試，驗證：元件測試通過且 lint 無違規引入
-- [ ] 7.4 實作 `AuthPort`/`HttpPort` 轉接器與 `apps/hq` 登入/管理畫面，驅動租戶、user-auth、授權三條流程，驗證：每個畫面對本地 API 走完流程
-- [ ] 7.5 新增接縫 lint（共用包禁框架引入、port 禁框架型別、樣式唯 tokens 以 stylelint 白名單斷言、禁直調瀏覽器/原生 API），驗證：各植入一處違規皆紅燈、移除即綠燈
+- [x] 7.1 搭建 workspace：共用包 `domain/`、`application/ports/`、`components/`、`theme/tokens.css`、`shell/`＋應用殼 `apps/hq`、`apps/store`（`apps/consumer` 空殼佔位），各 app 宣告封裝目標（Web 先行），驗證：`npm run build` 全應用成功
+- [x] 7.2 實作純 TS domain（工作階段、租戶範圍、權限判定）與 vitest 單元測試（純 Node 無 DOM），零框架引入且 port 簽名無框架型別，驗證：`npm run test` 通過
+- [x] 7.3 實作展示型 `components`（僅 props/events 通訊、不碰 store/router、樣式只吃 tokens）與元件測試，驗證：元件測試通過且 lint 無違規引入
+- [x] 7.4 實作 `AuthPort`/`HttpPort` 轉接器與 `apps/hq` 登入/管理畫面，驅動租戶、user-auth、授權三條流程，驗證：每個畫面對本地 API 走完流程
+- [x] 7.5 新增接縫 lint（共用包禁框架引入、port 禁框架型別、樣式唯 tokens 以 stylelint 白名單斷言、禁直調瀏覽器/原生 API），驗證：各植入一處違規皆紅燈、移除即綠燈
 
 ## 8. 端到端驗證（End-to-end verification，僅整合檢查）
 
-- [ ] 8.1 對乾淨 Postgres 執行完整 Reqnroll 套件（全部 35 個 spec 場景）＋四接縫 port contract 契約測試策略（fake 全跑＋已接線實作按其就位狀態），驗證：`dotnet test` 全綠
-- [ ] 8.2 對本變更執行 review-work 閘門，逐條處理或記錄發現，驗證：審查報告附於變更且零開放 blocker
+- [x] 8.1 對乾淨 Postgres 執行完整 Reqnroll 套件（全部 35 個 spec 場景）＋四接縫 port contract 契約測試策略（fake 全跑＋已接線實作按其就位狀態），驗證：`dotnet test` 全綠
+- [x] 8.2 對本變更執行 review-work 閘門，逐條處理或記錄發現，驗證：審查報告附於變更且零開放 blocker
 
 ## Workflow follow-up
 

@@ -1,4 +1,4 @@
-# Spec Delta
+﻿# Spec Delta
 
 ## Purpose
 
@@ -36,7 +36,7 @@ The system SHALL resolve the active tenant from the authenticated request scope 
 
 ### Requirement: Cross-tenant isolation
 
-The system SHALL return only data belonging to the active tenant. Any read or write targeting another tenant's data SHALL be denied, and list operations SHALL exclude other tenants' records. The platform-scoped Party identity store (see `identity/party`) is exempt: reachable only by exact identifier match, never listable or traversable. 系統 SHALL 僅回傳屬於作用中租戶的資料；存取他租戶資料的讀寫 SHALL 拒絕，清單查詢 SHALL 排除他租戶紀錄。平台級 Party 身份庫（見 `identity/party`）为例外：僅精確比對可達，絕不可列出或遍歷。
+The system SHALL return only data belonging to the active tenant. Any read or write targeting another tenant's data SHALL be denied, and list operations SHALL exclude other tenants' records. The platform-scoped Party identity store (see `identity/party`) is exempt: reachable only by exact identifier match, never listable or traversable. 系統 SHALL 僅回傳屬於作用中租戶的資料；存取他租戶資料的讀寫 SHALL 拒絕，清單查詢 SHALL 排除他租戶紀錄。平台級 Party 身份庫（見 `identity/party`）為例外：僅精確比對可達，絕不可列出或遍歷。
 
 #### Scenario: Cross-tenant read denied
 
