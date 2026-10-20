@@ -1,0 +1,89 @@
+/**
+ * kit: ds-card — panel surface with header/footer regions, tone and outline mode; tone classes
+ * override ONLY the per-card tone variables (same同構 trick as ds-btn); every declaration
+ * consumes tokens. 卡片 kit class：header/footer 區域＋tone／outline；tone class 只改變數；唯 tokens。
+ * GUARD: every non-primary tone has a class here (primary = base default).
+ */
+.ds-card {
+  --card-tone: var(--iam-color-primary);
+  --card-tone-strong: var(--iam-color-primary-strong);
+  --card-tone-contrast: var(--iam-color-primary-contrast);
+
+  border: 1px solid var(--iam-color-border);
+  border-radius: var(--iam-radius-medium);
+  background-color: var(--iam-color-surface-muted);
+  padding: var(--iam-space-4) var(--iam-space-6);
+}
+
+.ds-card-title {
+  margin: 0;
+  font-size: var(--iam-font-size-heading);
+  font-weight: var(--iam-font-weight-semibold);
+}
+
+.ds-card-header {
+  padding-bottom: var(--iam-space-2);
+  border-bottom: 1px solid var(--iam-color-border);
+  font-size: var(--iam-font-size-body);
+  font-weight: var(--iam-font-weight-semibold);
+  margin: 0;
+}
+
+.ds-card-footer {
+  padding-top: var(--iam-space-2);
+  border-top: 1px solid var(--iam-color-border);
+  margin: 0;
+}
+
+/* outline mode: frame + title carry the tone; transparent fill */
+.ds-card-outline {
+  background-color: transparent;
+  border-color: var(--card-tone);
+}
+
+.ds-card-outline .ds-card-title {
+  color: var(--card-tone);
+}
+
+/* tone variable overrides（primary＝base 預設值，故僅顯式其餘七色調） */
+.ds-card-danger {
+  --card-tone: var(--iam-tone-danger);
+  --card-tone-strong: var(--iam-tone-danger-strong);
+  --card-tone-contrast: var(--iam-tone-danger-contrast);
+}
+
+.ds-card-secondary {
+  --card-tone: var(--iam-tone-secondary);
+  --card-tone-strong: var(--iam-tone-secondary-strong);
+  --card-tone-contrast: var(--iam-tone-secondary-contrast);
+}
+
+.ds-card-success {
+  --card-tone: var(--iam-tone-success);
+  --card-tone-strong: var(--iam-tone-success-strong);
+  --card-tone-contrast: var(--iam-tone-success-contrast);
+}
+
+.ds-card-warning {
+  --card-tone: var(--iam-tone-warning);
+  --card-tone-strong: var(--iam-tone-warning-strong);
+  --card-tone-contrast: var(--iam-tone-warning-contrast);
+}
+
+.ds-card-info {
+  --card-tone: var(--iam-tone-info);
+  --card-tone-strong: var(--iam-tone-info-strong);
+  --card-tone-contrast: var(--iam-tone-info-contrast);
+}
+
+.ds-card-light {
+  --card-tone: var(--iam-tone-light);
+  --card-tone-strong: var(--iam-tone-light-strong);
+  --card-tone-contrast: var(--iam-tone-light-contrast);
+}
+
+.ds-card-dark {
+  --card-tone: var(--iam-tone-dark);
+  --card-tone-strong: var(--iam-tone-dark-strong);
+  --card-tone-contrast: var(--iam-tone-dark-contrast);
+}

@@ -1,0 +1,9 @@
+/**
+ * kit entry: composes the ds-* component classes — pure CSS over the semantic layer, so any
+ * frontend project (framework-free pages included) can apply styled controls quickly; apps get it
+ * automatically through theme.css. 純 CSS 元件 class：任何專案可快速套用；app 經 theme.css 自動取得。
+ */
+@import './components/ds-btn.css';
+@import './components/ds-card.css';
+@import './components/ds-field.css';
+@import './components/ds-alert.css';

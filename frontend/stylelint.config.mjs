@@ -2,20 +2,27 @@ export default {
   rules: {},
   overrides: [
     {
-      // tokens.css 只准自訂屬性定義（raw 值定義是 tokens 本職，不套 whitelist）
-      files: ['**/packages/theme/src/*.css'],
+      // tokens.css／semantic.css 是 tokens 定義層（raw 值定義是它們的本職）；其餘 css 只准消費 var(--iam-*)
+      files: ['**/packages/theme/src/tokens.css', '**/packages/theme/src/semantic.css'],
       rules: {
         'no-empty-source': true,
         'property-no-unknown': true,
       },
     },
     {
-      // 樣式唯 tokens（task 7.5）：共用元件樣式與 app 樣式，色彩/字級/留白宣告只准 `var(--iam-*)`。
-      files: ['**/packages/components/src/styles/*.css', '**/apps/**/*.css'],
+      // 樣式唯 tokens（swap principle）：kit 消費層與整合層＋app 樣式，機腕宣告只准 `var(--iam-*)`。
+      files: [
+        '**/packages/theme/src/components/*.css',
+        '**/packages/theme/src/integrations/*.css',
+        '**/packages/components/src/**/*.css',
+        '**/apps/*/src/**/*.css',
+      ],
       rules: {
         'declaration-property-value-allowed-list': {
-          '/^(background-color|color|border-color|font-size|font-weight|padding|margin|gap|border-radius)$/': [
+          '/^(background-color|color|border-color|font-size|font-weight|padding|margin|gap|border-radius|--(btn|card)-tone[a-z-]*)$/': [
             '/^var\\(--iam-/',
+            '/^var\\(--btn-tone-?/', // kit 中繼變數：值來自 --iam-tone-*（守衛測試鎖定變數值來源）
+            '/^var\\(--card-tone-?/',
             'inherit',
             'transparent',
             'none',

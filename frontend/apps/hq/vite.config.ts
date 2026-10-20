@@ -7,9 +7,7 @@ export default defineConfig({
     tailwindcss(),
     vue({
       template: {
-        compilerOptions: {
-          isCustomElement: (tag: string) => tag.startsWith('iam-'),
-        },
+        compilerOptions: {},
       },
     }),
   ],

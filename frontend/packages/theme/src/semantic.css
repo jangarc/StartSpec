@@ -1,0 +1,56 @@
+/**
+ * Semantic layer: purpose aliases over primitives — the names all downstream code consumes
+ * (`--iam-color-*`, `--iam-radius-*`, `--iam-space-*`, `--iam-font-*`). Theme switching
+ * (light/dark) or a product rebrand edits THIS layer only (over a different primitive palette).
+ * 語義層：所有下游消費的名稱；換主題／換品牌只動本層。
+ */
+:root {
+  --iam-color-surface: var(--iam-white);
+  --iam-color-surface-muted: var(--iam-gray-50);
+  --iam-color-border: var(--iam-gray-200);
+  --iam-color-text: var(--iam-gray-900);
+  --iam-color-text-muted: var(--iam-gray-500);
+  --iam-color-primary: var(--iam-blue-600);
+  --iam-color-primary-strong: var(--iam-blue-700);
+  --iam-color-primary-contrast: var(--iam-white);
+  --iam-color-danger: var(--iam-red-600);
+  --iam-color-danger-strong: var(--iam-red-700);
+  --iam-color-danger-contrast: var(--iam-white);
+  --iam-tone-danger: var(--iam-color-danger);
+  --iam-tone-danger-strong: var(--iam-color-danger-strong);
+  --iam-tone-danger-contrast: var(--iam-color-danger-contrast);
+
+  /* Bootstrap-5-like tone scale (design-system vocabulary; kit classes + component `tone` props
+   * consume these; every tone = base + hover/active-strong + on-tone contrast text.
+   * primary/danger alias the semantic color tokens above (single source per value).
+   * 色調尺度：每色調＝base＋strong（hover/active）＋contrast（其上文字）；primary/danger 重用上方語義色。 */
+  --iam-tone-primary: var(--iam-color-primary);
+  --iam-tone-primary-strong: var(--iam-color-primary-strong);
+  --iam-tone-primary-contrast: var(--iam-color-primary-contrast);
+  --iam-tone-secondary: var(--iam-gray-200);
+  --iam-tone-secondary-strong: var(--iam-gray-500);
+  --iam-tone-secondary-contrast: var(--iam-gray-900);
+  --iam-tone-success: var(--iam-green-600);
+  --iam-tone-success-strong: var(--iam-green-700);
+  --iam-tone-success-contrast: var(--iam-white);
+  --iam-tone-warning: var(--iam-amber-600);
+  --iam-tone-warning-strong: var(--iam-amber-700);
+  --iam-tone-warning-contrast: var(--iam-white);
+  --iam-tone-info: var(--iam-sky-600);
+  --iam-tone-info-strong: var(--iam-sky-700);
+  --iam-tone-info-contrast: var(--iam-white);
+  --iam-tone-light: var(--iam-white);
+  --iam-tone-light-strong: var(--iam-gray-200);
+  --iam-tone-light-contrast: var(--iam-gray-900);
+  --iam-tone-dark: var(--iam-gray-900);
+  --iam-tone-dark-strong: var(--iam-gray-500);
+  --iam-tone-dark-contrast: var(--iam-white);
+
+  --iam-radius-small: var(--iam-radius-1);
+  --iam-radius-medium: var(--iam-radius-2);
+  --iam-font-size-caption: var(--iam-font-12);
+  --iam-font-size-body: var(--iam-font-14);
+  --iam-font-size-heading: var(--iam-font-18);
+  --iam-font-weight-regular: var(--iam-weight-regular);
+  --iam-font-weight-semibold: var(--iam-weight-semibold);
+}

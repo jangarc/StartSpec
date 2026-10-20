@@ -15,11 +15,14 @@ export function createFetchHttpPort(getAccessToken: () => string | null, baseUrl
       if (accessToken) {
         headers['authorization'] = `Bearer ${accessToken}`;
       }
-      const response = await fetch(`${baseUrl}${request.path}`, {
+      const init: RequestInit = {
         method: request.method,
         headers,
-        body: request.body === undefined ? undefined : JSON.stringify(request.body),
-      });
+      };
+      if (request.body !== undefined) {
+        init.body = JSON.stringify(request.body);
+      }
+      const response = await fetch(`${baseUrl}${request.path}`, init);
       const text = await response.text();
       const body = (text.length > 0 ? JSON.parse(text) : {}) as TBody;
       return { status: response.status, body };

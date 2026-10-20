@@ -16,6 +16,7 @@
     "@startspec/domain": "*",
     "@startspec/shell": "*",
     "@startspec/theme": "*",
+    "@startspec/vue": "*",
     "vue": "^3.5.0"
   },
   "devDependencies": {

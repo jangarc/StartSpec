@@ -1,0 +1,24 @@
+/**
+ * Tailwind integration adapter (the ONLY tailwind-coupled file in the design-system package):
+ * maps design-system tokens into tailwind's theming so utilities resolve to `--iam-*` variables.
+ * Swapping the CSS framework (e.g. UnoCSS) = REPLACE this file with a sibling adapter under
+ * `integrations/` and point `theme.css` at it — tokens and component code stay untouched.
+ * Tailwind 整合轉接器（唯一耦合檔）：utilities 解析到 `--iam-*`；換框架＝換本檔＋改 theme.css 指向。
+ */
+@import 'tailwindcss';
+
+@theme inline {
+  --color-surface: var(--iam-color-surface);
+  --color-surface-muted: var(--iam-color-surface-muted);
+  --color-border: var(--iam-color-border);
+  --color-text: var(--iam-color-text);
+  --color-text-muted: var(--iam-color-text-muted);
+  --color-primary: var(--iam-color-primary);
+  --color-primary-contrast: var(--iam-color-primary-contrast);
+  --color-danger: var(--iam-color-danger);
+  --radius-small: var(--iam-radius-small);
+  --radius-medium: var(--iam-radius-medium);
+  --text-body: var(--iam-font-size-body);
+  --text-caption: var(--iam-font-size-caption);
+  --text-heading: var(--iam-font-size-heading);
+}

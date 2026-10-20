@@ -1,20 +1,34 @@
+/**
+ * Design-system primitives: THE single place raw values are defined (three-layer architecture;
+ * semantic aliases and component classes consume these — never the other way around).
+ * 基元層：原始值唯一定義處；語義層與元件層只消費本層，絕不反向。
+ */
 :root {
-  --iam-color-surface: #ffffff;
-  --iam-color-surface-muted: #f5f6f8;
-  --iam-color-border: #d8dce3;
-  --iam-color-text: #1d2530;
-  --iam-color-text-muted: #5b6470;
-  --iam-color-primary: #2f5cd6;
-  --iam-color-primary-contrast: #ffffff;
-  --iam-color-danger: #c22f35;
-  --iam-radius-small: 4px;
-  --iam-radius-medium: 8px;
+  --iam-white: #ffffff;
+  --iam-gray-50: #f5f6f8;
+  --iam-gray-200: #d8dce3;
+  --iam-gray-500: #5b6470;
+  --iam-gray-900: #1d2530;
+  --iam-blue-600: #2f5cd6;
+  --iam-blue-700: #274aa8;
+  --iam-red-600: #c22f35;
+  --iam-red-700: #8f2024;
+  --iam-green-600: #2e8b47;
+  --iam-green-700: #256b39;
+  --iam-amber-600: #b45309;
+  --iam-amber-700: #8f4006;
+  --iam-sky-600: #0e7490;
+  --iam-sky-700: #0b5d73;
+
+  --iam-space-1: 4px;
   --iam-space-2: 8px;
   --iam-space-4: 16px;
   --iam-space-6: 24px;
-  --iam-font-size-heading: 18px;
-  --iam-font-size-body: 14px;
-  --iam-font-size-caption: 12px;
-  --iam-font-weight-regular: 400;
-  --iam-font-weight-semibold: 600;
+  --iam-radius-1: 4px;
+  --iam-radius-2: 8px;
+  --iam-font-12: 12px;
+  --iam-font-14: 14px;
+  --iam-font-18: 18px;
+  --iam-weight-regular: 400;
+  --iam-weight-semibold: 600;
 }

@@ -1,0 +1,16 @@
+/**
+ * kit: ds-alert — status message pattern (info / error tones); semantic tokens only.
+ * 狀態訊息 kit class：info／error 語氣；唯 tokens。
+ */
+.ds-alert {
+  margin: 0;
+  font-size: var(--iam-font-size-caption);
+}
+
+.ds-alert-info {
+  color: var(--iam-color-primary);
+}
+
+.ds-alert-error {
+  color: var(--iam-color-danger);
+}

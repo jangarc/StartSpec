@@ -4,7 +4,15 @@
   "type": "module",
   "exports": {
     "./tokens.css": "./src/tokens.css",
+    "./semantic.css": "./src/semantic.css",
+    "./kit.css": "./src/kit.css",
     "./theme.css": "./src/theme.css"
   },
-  "scripts": {}
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  }
 }

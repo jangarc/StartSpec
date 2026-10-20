@@ -1,0 +1,27 @@
+/**
+ * kit: ds-field — form-field pattern (label + control input + error alert); semantic tokens only.
+ * 表單欄位 kit class：標籤＋控制項輸入＋錯誤警示；唯 tokens。
+ */
+.ds-field-label {
+  display: block;
+  font-size: var(--iam-font-size-body);
+  font-weight: var(--iam-font-weight-semibold);
+  color: var(--iam-color-text);
+}
+
+.ds-field-input {
+  border: 1px solid var(--iam-color-border);
+  border-radius: var(--iam-radius-small);
+  padding: var(--iam-space-2);
+  font-size: var(--iam-font-size-body);
+  background-color: var(--iam-color-surface);
+  color: var(--iam-color-text);
+}
+
+.ds-field-alert {
+  font-size: var(--iam-font-size-caption);
+}
+
+.ds-field-alert-error {
+  color: var(--iam-color-danger);
+}

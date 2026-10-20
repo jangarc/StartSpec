@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
-import '@startspec/components';
+import { IamButton, IamCard, IamField } from '@startspec/vue';
 import { isAccessUsable } from '@startspec/domain';
-import type { SessionTokens, WorkingSession } from '@startspec/domain';
+import type { SessionTokens } from '@startspec/application';
+import type { WorkingSession } from '@startspec/domain';
 import { createApiAuthPort } from './adapters/apiAuthPort';
 import { createFetchHttpPort } from './adapters/httpFetchPort';
+
+const http = createFetchHttpPort(() => signedIn.value?.tokens.accessToken ?? null);
+const auth = createApiAuthPort(http);
 
 interface Outcome {
   tone: 'ok' | 'fail';
@@ -30,9 +34,6 @@ interface SignedInState {
 }
 
 const signedIn = ref<SignedInState | null>(null);
-
-const http = createFetchHttpPort(() => signedIn.value?.tokens.accessToken ?? null);
-const auth = createApiAuthPort(http);
 
 const signInForm = reactive({ tenantId: 'hq', loginName: 'admin', password: '' });
 const signInOutcome = ref<Outcome | null>(null);
@@ -224,22 +225,21 @@ async function revokeAssignment(): Promise<void> {
 <template>
   <main class="min-h-screen bg-surface text-text text-body">
     <header class="flex items-center justify-between gap-4 border-b border-border px-6 py-4">
-      <h1 class="m-0 text-heading font-semibold">IAM HQ</h1>
+      <h1 class="ds-card-title">IAM HQ</h1>
       <span class="text-caption text-text-muted">HQ Admin</span>
     </header>
 
-    <section class="my-4 mx-6 grid gap-2 rounded-medium border border-border bg-surface-muted px-6 py-4">
-      <h2 class="m-0 text-heading font-semibold">工作階段（sign-in / refresh）</h2>
+    <IamCard title="工作階段（sign-in / refresh）" class="mx-6 my-4 grid gap-2">
       <div class="grid gap-2">
-        <iam-field label="租戶 ID"><input v-model="signInForm.tenantId" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
-        <iam-field label="登入名稱"><input v-model="signInForm.loginName" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
-        <iam-field label="密碼"><input v-model="signInForm.password" type="password" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
+        <IamField label="租戶 ID"><input v-model="signInForm.tenantId" class="ds-field-input w-full" /></IamField>
+        <IamField label="登入名稱"><input v-model="signInForm.loginName" class="ds-field-input w-full" /></IamField>
+        <IamField label="密碼"><input v-model="signInForm.password" type="password" class="ds-field-input w-full" /></IamField>
       </div>
       <div class="flex items-center gap-2">
-        <iam-button variant="primary" @iam-click="signIn">登入</iam-button>
-        <iam-button variant="quiet" @iam-click="refreshSession">刷新權杖</iam-button>
+        <IamButton variant="primary" @iam-click="signIn">登入</IamButton>
+        <IamButton variant="secondary" @iam-click="refreshSession">刷新權杖</IamButton>
       </div>
-      <p v-if="signInOutcome" :class="['m-0', 'text-caption', signInOutcome.tone === 'ok' ? 'text-primary' : 'text-danger']">
+      <p v-if="signInOutcome" :class="[signInOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">
         {{ signInOutcome.text }}
       </p>
       <ul v-if="signedIn" class="m-0 grid gap-2 p-0">
@@ -251,65 +251,62 @@ async function revokeAssignment(): Promise<void> {
         </li>
         <li>作用租戶（範圍自驗證 claims 解析，不送租戶標頭）: {{ sessionTenant }}</li>
       </ul>
-    </section>
+    </IamCard>
 
-    <section class="my-4 mx-6 grid gap-2 rounded-medium border border-border bg-surface-muted px-6 py-4">
-      <h2 class="m-0 text-heading font-semibold">租戶（platform entry provision / organizations）</h2>
+    <IamCard title="租戶（platform entry provision / organizations）" class="mx-6 my-4 grid gap-2">
       <div class="grid gap-2">
-        <iam-field label="新租戶 ID"><input v-model="tenantForm.tenantId" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
-        <iam-field label="新租戶名稱"><input v-model="tenantForm.tenantName" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
-        <iam-field label="初始組織名稱"><input v-model="tenantForm.initialOrganizationName" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
+        <IamField label="新租戶 ID"><input v-model="tenantForm.tenantId" class="ds-field-input w-full" /></IamField>
+        <IamField label="新租戶名稱"><input v-model="tenantForm.tenantName" class="ds-field-input w-full" /></IamField>
+        <IamField label="初始組織名稱"><input v-model="tenantForm.initialOrganizationName" class="ds-field-input w-full" /></IamField>
       </div>
       <div class="flex items-center gap-2">
-        <iam-button variant="primary" @iam-click="provisionTenant">建立租戶</iam-button>
-        <iam-button variant="quiet" @iam-click="loadOrganizations">列出組織（claims 範圍）</iam-button>
+        <IamButton variant="primary" @iam-click="provisionTenant">建立租戶</IamButton>
+        <IamButton variant="secondary" @iam-click="loadOrganizations">列出組織（claims 範圍）</IamButton>
       </div>
-      <p v-if="tenantOutcome" :class="['m-0', 'text-caption', tenantOutcome.tone === 'ok' ? 'text-primary' : 'text-danger']">
+      <p v-if="tenantOutcome" :class="[tenantOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">
         {{ tenantOutcome.text }}
       </p>
       <ul v-if="organizations.length > 0" class="m-0 grid gap-2 p-0">
         <li v-for="name in organizations" :key="name">{{ name }}</li>
       </ul>
-    </section>
+    </IamCard>
 
-    <section class="my-4 mx-6 grid gap-2 rounded-medium border border-border bg-surface-muted px-6 py-4">
-      <h2 class="m-0 text-heading font-semibold">使用者驗證（user provision，作用租戶＝工作階段租戶）</h2>
+    <IamCard title="使用者驗證（user provision，作用租戶＝工作階段租戶）" class="mx-6 my-4 grid gap-2">
       <div class="grid gap-2">
-        <iam-field label="登入名稱"><input v-model="userForm.loginName" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
-        <iam-field label="顯示名稱"><input v-model="userForm.displayName" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
-        <iam-field label="證件類型"><input v-model="userForm.typeCode" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
-        <iam-field label="證件號碼"><input v-model="userForm.number" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
+        <IamField label="登入名稱"><input v-model="userForm.loginName" class="ds-field-input w-full" /></IamField>
+        <IamField label="顯示名稱"><input v-model="userForm.displayName" class="ds-field-input w-full" /></IamField>
+        <IamField label="證件類型"><input v-model="userForm.typeCode" class="ds-field-input w-full" /></IamField>
+        <IamField label="證件號碼"><input v-model="userForm.number" class="ds-field-input w-full" /></IamField>
       </div>
       <div class="flex items-center gap-2">
-        <iam-button variant="primary" @iam-click="provisionUser">建立使用者</iam-button>
+        <IamButton variant="primary" @iam-click="provisionUser">建立使用者</IamButton>
       </div>
-      <p v-if="userOutcome" :class="['m-0', 'text-caption', userOutcome.tone === 'ok' ? 'text-primary' : 'text-danger']">
+      <p v-if="userOutcome" :class="[userOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">
         {{ userOutcome.text }}
       </p>
-    </section>
+    </IamCard>
 
-    <section class="my-4 mx-6 grid gap-2 rounded-medium border border-border bg-surface-muted px-6 py-4">
-      <h2 class="m-0 text-heading font-semibold">授權（role / assign / evaluate / revoke，作用租戶＝工作階段租戶）</h2>
+    <IamCard title="授權（role / assign / evaluate / revoke，作用租戶＝工作階段租戶）" class="mx-6 my-4 grid gap-2">
       <div class="grid gap-2">
-        <iam-field label="角色名稱"><input v-model="roleForm.name" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
-        <iam-field label="權限（逗號分隔）"><input v-model="roleForm.permissionsCsv" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
-        <iam-field label="roleId"><input v-model="assignForm.roleId" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
-        <iam-field label="userId"><input v-model="assignForm.userId" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
-        <iam-field label="評估權限 key"><input v-model="evaluationForm.permission" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
-        <iam-field label=" assignmentId（撤銷用）"><input v-model="revokeForm.assignmentId" class="w-full rounded-small border border-border bg-surface px-2 py-2 text-body text-text" /></iam-field>
+        <IamField label="角色名稱"><input v-model="roleForm.name" class="ds-field-input w-full" /></IamField>
+        <IamField label="權限（逗號分隔）"><input v-model="roleForm.permissionsCsv" class="ds-field-input w-full" /></IamField>
+        <IamField label="roleId"><input v-model="assignForm.roleId" class="ds-field-input w-full" /></IamField>
+        <IamField label="userId"><input v-model="assignForm.userId" class="ds-field-input w-full" /></IamField>
+        <IamField label="評估權限 key"><input v-model="evaluationForm.permission" class="ds-field-input w-full" /></IamField>
+        <IamField label=" assignmentId（撤銷用）"><input v-model="revokeForm.assignmentId" class="ds-field-input w-full" /></IamField>
       </div>
       <div class="flex items-center gap-2">
-        <iam-button variant="primary" @iam-click="provisionRole">建立角色</iam-button>
-        <iam-button variant="primary" @iam-click="assignRole">指派角色</iam-button>
-        <iam-button variant="quiet" @iam-click="evaluatePermission">評估權限</iam-button>
-        <iam-button variant="danger" @iam-click="revokeAssignment">撤銷指派</iam-button>
+        <IamButton variant="primary" @iam-click="provisionRole">建立角色</IamButton>
+        <IamButton variant="primary" @iam-click="assignRole">指派角色</IamButton>
+        <IamButton variant="secondary" @iam-click="evaluatePermission">評估權限</IamButton>
+        <IamButton variant="danger" @iam-click="revokeAssignment">撤銷指派</IamButton>
       </div>
-      <p v-if="roleOutcome" :class="['m-0', 'text-caption', roleOutcome.tone === 'ok' ? 'text-primary' : 'text-danger']">{{ roleOutcome.text }}</p>
-      <p v-if="assignOutcome" :class="['m-0', 'text-caption', assignOutcome.tone === 'ok' ? 'text-primary' : 'text-danger']">{{ assignOutcome.text }}</p>
-      <p v-if="evaluationOutcome" :class="['m-0', 'text-caption', evaluationOutcome.tone === 'ok' ? 'text-primary' : 'text-danger']">
+      <p v-if="roleOutcome" :class="[roleOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">{{ roleOutcome.text }}</p>
+      <p v-if="assignOutcome" :class="[assignOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">{{ assignOutcome.text }}</p>
+      <p v-if="evaluationOutcome" :class="[evaluationOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">
         {{ evaluationOutcome.text }}
       </p>
-      <p v-if="revokeOutcome" :class="['m-0', 'text-caption', revokeOutcome.tone === 'ok' ? 'text-primary' : 'text-danger']">{{ revokeOutcome.text }}</p>
-    </section>
+      <p v-if="revokeOutcome" :class="[revokeOutcome.tone === 'ok' ? 'ds-alert-info' : 'ds-alert-error']">{{ revokeOutcome.text }}</p>
+    </IamCard>
   </main>
 </template>

@@ -1,0 +1,101 @@
+/**
+ * kit: ds-btn — Bootstrap-5-like tone variants over the DESIGN-SYSTEM tone scale, with the
+ * outline mode and sizes (lg / md=base / sm): tone classes override ONLY the per-element tone
+ * variables so filled and outline modes stay同構 (DRY); state pattern: hover/active use the
+ * -strong stops, disabled falls to muted. Every declaration consumes tokens — no raw values.
+ * 按鈕 kit class：tone class 只改 `--btn-*` 變數→實心/外框/尺寸自動同構；狀態模式齊備；唯 tokens。
+ */
+.ds-btn {
+  --btn-tone: var(--iam-color-primary);
+  --btn-tone-strong: var(--iam-color-primary-strong);
+  --btn-tone-contrast: var(--iam-color-primary-contrast);
+
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: var(--iam-radius-medium);
+  background-color: var(--btn-tone);
+  color: var(--btn-tone-contrast);
+  padding: var(--iam-space-2) var(--iam-space-4);
+  font-size: var(--iam-font-size-body);
+  font-weight: var(--iam-font-weight-semibold);
+  cursor: pointer;
+}
+
+.ds-btn:hover,
+.ds-btn:active {
+  background-color: var(--btn-tone-strong);
+}
+
+.ds-btn[disabled] {
+  background-color: var(--iam-color-surface-muted);
+  color: var(--iam-color-text-muted);
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* outline mode: frame + text carry the tone; transparent fill; hover inverts to a tone fill */
+.ds-btn-outline {
+  background-color: transparent;
+  color: var(--btn-tone);
+  border-color: var(--btn-tone);
+}
+
+.ds-btn-outline:hover,
+.ds-btn-outline:active {
+  background-color: var(--btn-tone);
+  color: var(--btn-tone-contrast);
+}
+
+/* sizes: sm / md(base) / lg（md 未指定時即基準） */
+.ds-btn-sm {
+  padding: var(--iam-space-1) var(--iam-space-2);
+  font-size: var(--iam-font-size-caption);
+}
+
+.ds-btn-lg {
+  padding: var(--iam-space-2) var(--iam-space-6);
+  font-size: var(--iam-font-size-heading);
+}
+
+/* tone variable overrides（primary＝base 預設值，故僅顯式其餘七色調） */
+.ds-btn-danger {
+  --btn-tone: var(--iam-tone-danger);
+  --btn-tone-strong: var(--iam-tone-danger-strong);
+  --btn-tone-contrast: var(--iam-tone-danger-contrast);
+}
+
+.ds-btn-secondary {
+  --btn-tone: var(--iam-tone-secondary);
+  --btn-tone-strong: var(--iam-tone-secondary-strong);
+  --btn-tone-contrast: var(--iam-tone-secondary-contrast);
+}
+
+.ds-btn-success {
+  --btn-tone: var(--iam-tone-success);
+  --btn-tone-strong: var(--iam-tone-success-strong);
+  --btn-tone-contrast: var(--iam-tone-success-contrast);
+}
+
+.ds-btn-warning {
+  --btn-tone: var(--iam-tone-warning);
+  --btn-tone-strong: var(--iam-tone-warning-strong);
+  --btn-tone-contrast: var(--iam-tone-warning-contrast);
+}
+
+.ds-btn-info {
+  --btn-tone: var(--iam-tone-info);
+  --btn-tone-strong: var(--iam-tone-info-strong);
+  --btn-tone-contrast: var(--iam-tone-info-contrast);
+}
+
+.ds-btn-light {
+  --btn-tone: var(--iam-tone-light);
+  --btn-tone-strong: var(--iam-tone-light-strong);
+  --btn-tone-contrast: var(--iam-tone-light-contrast);
+}
+
+.ds-btn-dark {
+  --btn-tone: var(--iam-tone-dark);
+  --btn-tone-strong: var(--iam-tone-dark-strong);
+  --btn-tone-contrast: var(--iam-tone-dark-contrast);
+}
