@@ -1,4 +1,4 @@
----
+﻿---
 description: Implement tasks from an OpenSpec change (Experimental)
 ---
 
@@ -7,6 +7,17 @@ Implement tasks from an OpenSpec change.
 **Store selection:** If the user names a store (a store is a standalone OpenSpec repo registered on this machine) or the work lives in one, run `openspec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `archive`, `doctor`, `context`). Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `openspec/` root.
 
 **Input**: Optionally specify a change name (e.g., `/opsx-apply add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
+
+**Operational guidance (project-level hooks; source: openspec/config.yaml — the installed openspec does not yet consume `operations:` config, so this block is authoritative for apply/archive conduct):**
+
+- Must use test-driven-development skill
+- Use agent-browser skill to verify any UI flow change on the real surface（UI 流程變更強制真實表面驗證）
+- Use database-schema-designer skill when a task group creates or alters schema or migrations（涉及綱要/遷移的任務組強制套 schema 設計紀律）
+- Use vue-best-practices skill for any Vue component, composable, or app-shell change（Vue 元件/composable/殼層變更一律走 Composition API + <script setup> + TS 紀律）
+- Use vue-testing-best-practices skill when creating or changing frontend tests（前端測試任務組必載入）
+- Use vue-debug-guides skill when diagnosing Vue runtime errors or warnings（Vue 除錯時載入）
+- Use ui-styling skill for UI styling implementation work（樣式實作任務組必載入）
+- Use frontend-design skill when building new UI screens or reshaping an existing one（新畫面/重塑畫面時必載入）
 
 **Steps**
 

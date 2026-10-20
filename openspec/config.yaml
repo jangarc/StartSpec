@@ -7,6 +7,7 @@ context: |
   資料：PostgreSQL + EF Core Code-First；多租戶共享資料庫，tenant_id 列級隔離由全域查詢過濾強制；綱要變更一律走 migrations。
   範圍：垂直切片依序 iam-foundation → store-onboarding → consumer → hospital；切片需求只記錄、不實作。
   語言：markdown 產物維持雙語——spec delta 以英文句在前、繁中在後；design/tasks 以繁中為主、關鍵詞 English。
+  設計原則：全部程式碼一律遵守 SOLID、KISS、YAGNI、DRY、LoD、CQS、SOC、AHA；原則衝突時明確調停（優先序：安全/契約 > 正確性 > 清楚性 > DRY/KISS > 微效率），design.md 需記載重大取捨。
 
 rules:
   proposal:
@@ -16,6 +17,7 @@ rules:
     - Must use c4-diagram skill（架構以 C4 容器圖講清）
     - Must use architectural-decision-records skill（決策以 ADR 形式落 design）
     - Must use glossary skill（新領域術語必入 glossary，防漂移）
+    - Use design-system skill when the design covers UI components, tokens, or styling architecture（UI 元件/tokens/樣式架構的設計必載入）
   specs:
     - Must use spec-as-source skill（delta 場景＝可執行驗收契約）
     - Must use glossary skill（spec 場景的新術語檢查點）
@@ -23,12 +25,6 @@ rules:
     - Must use test-driven-development skill（任務依紅→綠切片，驗證欄即驗收）
     - Must use glossary skill
 
-operations:
-  apply:
-    guidance:
-      - Must use test-driven-development skill
-      - Use agent-browser skill to verify any UI flow change on the real surface（UI 流程變更強制真實表面驗證）
-      - Use database-schema-designer skill when a task group creates or alters schema or migrations（涉及綱要/遷移的任務組強制套 schema 設計紀律）
-  archive:
-    guidance:
-      - Must run OpenSpec Sync before archiving
+# operations:（在現版 openspec 中此鍵未被 CLI 消費——apply／archive 的 skill hook
+# 以 .opencode/commands/opsx-apply.md、opsx-archive.md 與 skills/openspec-{apply,archive}-change
+# 為權威文字；CLI 若未來支援本鍵，再回遷。）

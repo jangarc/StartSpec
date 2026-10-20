@@ -1,4 +1,4 @@
----
+﻿---
 description: Archive a completed change in the experimental workflow
 ---
 
@@ -7,6 +7,11 @@ Archive a completed change in the experimental workflow.
 **Store selection:** If the user names a store (a store is a standalone OpenSpec repo registered on this machine) or the work lives in one, run `openspec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `archive`, `doctor`, `context`). Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `openspec/` root.
 
 **Input**: Optionally specify a change name after `/opsx-archive` (e.g., `/opsx-archive add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
+
+**Operational guidance (project-level hooks; source: openspec/config.yaml — the installed openspec does not yet consume operations: config, so this block is authoritative for archive conduct):**
+
+- Must run OpenSpec Sync before archiving
+- Must run review-work skill as the final gate before archive（歸檔前強制 review-work 閘門，QA 矩陣零 FAIL 才放行）
 
 **Steps**
 
