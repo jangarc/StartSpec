@@ -1,56 +1,34 @@
 schema: spec-driven
 
 context: |
-  Backend: C# + .NET 10, DDD + Modular Monolith first. Bounded Contexts communicate only via integration ports/events; future split to microservices must not require Domain rewrites.
-  BDD: Gherkin acceptance source with Reqnroll; every behavior change needs Given/When/Then cases.
-  Frontend: Vite + Vue 3 + TailwindCSS, but Domain/Application layers forbid importing vue/tailwind. UI consumes design tokens (CSS variables); tailwind config maps tokens only, preserving JS/CSS framework swap.
-  Data: PostgreSQL + EF Core Code-First, multi-tenant shared-db with tenant_id row isolation enforced by global query filters. All schema changes via migrations.
-  Scope: slices in order iam-foundation, then store-onboarding, then consumer, then hospital. Out-of-slice needs are recorded only. Hospital compliance details, consumer high-concurrency tuning, and microservice split are non-goals until their slice.
+  後端：C# + .NET 10，DDD＋Modular Monolith 優先。Bounded Contexts 僅經 integration ports/events 通訊；未來拆 microservices 不得迫使 Domain 重寫。
+  BDD：以 Gherkin 為驗收事實來源（Reqnroll）；任何行為變更須有 Given/When/Then 案例。
+  前端：Vite + Vue 3；Domain/Application 層禁引 vue/tailwind；UI 只吃 design tokens（CSS variables）；tailwind config 僅映射 tokens，保留框架替換自由。
+  資料：PostgreSQL + EF Core Code-First；多租戶共享資料庫，tenant_id 列級隔離由全域查詢過濾強制；綱要變更一律走 migrations。
+  範圍：垂直切片依序 iam-foundation → store-onboarding → consumer → hospital；切片需求只記錄、不實作。
+  語言：markdown 產物維持雙語——spec delta 以英文句在前、繁中在後；design/tasks 以繁中為主、關鍵詞 English。
 
-# Project context (optional)
-# Add only constraints that should guide OpenSpec artifacts and workflows.
-# Include constraints an agent cannot infer by reading the code.
-# Keep general project documentation and discoverable codebase facts out.
-# Example:
-#   context: |
-#     Designs and tasks must cover Windows, macOS, and Linux
-#     Write all artifacts in Spanish
-
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always state what is out of scope
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
-
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
-# This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
 rules:
   proposal:
-    - Must use grill-me skill
-    - Must use ui-ux-pro-max skill
-    # - Must use adversarial-authoring skill
-    # - Must use glossary skill
+    - Must use grill-me skill（提案前先以 grill-me 拷問計畫）
+    - Must use ui-ux-pro-max skill（涉及 UI 面的提案對齊其準則）
   design:
-    - Must use c4-diagram skill
-    # - Must use glossary skill
+    - Must use c4-diagram skill（架構以 C4 容器圖講清）
+    - Must use architectural-decision-records skill（決策以 ADR 形式落 design）
+    - Must use glossary skill（新領域術語必入 glossary，防漂移）
+  specs:
+    - Must use spec-as-source skill（delta 場景＝可執行驗收契約）
+    - Must use glossary skill（spec 場景的新術語檢查點）
+  tasks:
+    - Must use test-driven-development skill（任務依紅→綠切片，驗證欄即驗收）
+    - Must use glossary skill
 
 operations:
   apply:
     guidance:
       - Must use test-driven-development skill
+      - Use agent-browser skill to verify any UI flow change on the real surface（UI 流程變更強制真實表面驗證）
+      - Use database-schema-designer skill when a task group creates or alters schema or migrations（涉及綱要/遷移的任務組強制套 schema 設計紀律）
   archive:
     guidance:
       - Must run OpenSpec Sync before archiving
