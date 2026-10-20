@@ -1,27 +1,26 @@
+using Hosts.Base;
 using Iam.Application.Users;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Hosts.HQ;
 
 /// <summary>
 /// User-auth API surface (task 4.4), mapped 1:1 from the identity/user-auth spec delta. Hosts carry
-/// identity and format validation only (routes/limits); business rules and auth decisions live in
-/// the Application use cases. User provisioning is tenant-scoped via the X-Tenant-Id scope; sign-in
-/// and refresh carry the tenant in their bodies. ALL credential rejections share one 401 body and
-/// ALL refresh rejections share one 401 body — no oracle on which factor failed (no witness leak).
-/// 4.4 user-auth API 面：Hosts 只做身分＋格式驗證；使用者建立吃 X-Tenant-Id 範圍；登入與刷新以身分置於本體；
-/// 登入各失敗共用同一 401 本體、刷新各失敗共用同一 401 本體（認證失敗不可反推、不得洩漏見證內容）。
+/// identity and format validation only; business rules live in the Application use cases. Tenant
+/// scope resolves server-side from validated claims (design decision 2 — the client header is never
+/// trusted alone); sign-in and refresh are anonymous by spec shape. ALL credential rejections share
+/// one 401 body and ALL refresh rejections share one 401 body (no oracle on which factor failed).
+/// 4.4 user-auth API 面：Hosts 只做身分＋格式驗證；租戶範圍僅自驗證通過的 claims 解析；登入與刷新匿名；
+/// 各失敗家族共用同一本體（不可反推、不得洩漏見證內容）。
 /// </summary>
 public static class UserAuthEndpoints
 {
     public static IEndpointRouteBuilder MapUserAuthEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPost("/iam/users", async ([FromHeader(Name = "X-Tenant-Id")] string? tenantId, ProvisionUserCommand? command, ProvisionUserUseCase useCase) =>
+        endpoints.MapPost("/iam/users", async (ProvisionUserCommand? command, ProvisionUserUseCase useCase, TenantScope scope) =>
         {
-            if (string.IsNullOrWhiteSpace(tenantId)
-                || command is null
+            if (command is null
                 || string.IsNullOrWhiteSpace(command.LoginName)
                 || string.IsNullOrWhiteSpace(command.DisplayName)
                 || string.IsNullOrWhiteSpace(command.TypeCode)
@@ -32,7 +31,7 @@ public static class UserAuthEndpoints
 
             try
             {
-                var response = await useCase.HandleAsync(command with { TenantId = tenantId });
+                var response = await useCase.HandleAsync(command with { TenantId = scope.ActiveTenantId! });
                 return Results.Created($"/iam/users/{response.UserId}", new { userId = response.UserId, partyId = response.PartyId });
             }
             catch (UserLoginConflictException)

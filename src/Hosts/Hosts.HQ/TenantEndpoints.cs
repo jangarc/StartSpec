@@ -41,7 +41,7 @@ public static class TenantEndpoints
             }
         });
 
-        endpoints.MapGet("/iam/organizations", async (string? limit, TenantScope scope, ITenantStoreScope storeScope) =>
+        endpoints.MapGet("/iam/organizations", async (string? limit, string? cursor, TenantScope scope, ITenantStoreScope storeScope) =>
         {
             if (!int.TryParse(limit, out var parsedLimit) || parsedLimit < 1 || parsedLimit > 200)
             {
@@ -49,7 +49,7 @@ public static class TenantEndpoints
             }
 
             await using var store = storeScope.Member(scope.ActiveTenantId!);
-            var page = await store.ListOrganizationsAsync(scope.ActiveTenantId!, parsedLimit);
+            var page = await store.ListOrganizationsAsync(scope.ActiveTenantId!, parsedLimit, cursor);
 
             return Results.Ok(new { items = page.Items, hasNext = page.HasNext });
         });

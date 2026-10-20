@@ -17,7 +17,6 @@ public sealed class AuthorizationFeatureSteps(ScenarioContext scenarioContext)
     private readonly HttpClient _client = scenarioContext.Get<HttpClient>();
 
     private string? _suffix;
-    private const string TenantHeaderName = "X-Tenant-Id";
     private string _currentTenantKey = "";
     private readonly Dictionary<string, Guid> _userIdByTenant = new();
     private readonly Dictionary<string, Guid> _roleIdByTenant = new();
@@ -38,9 +37,11 @@ public sealed class AuthorizationFeatureSteps(ScenarioContext scenarioContext)
     public async Task GivenReadiedTenant(string tenantKey, string tenantDisplayName, string organizationName)
     {
         _currentTenantKey = tenantKey;
-        using var response = await _client.PostAsJsonAsync(
-            "/iam/tenants",
-            new { tenantId = ScopedTenantId(tenantKey), tenantName = tenantDisplayName, initialOrganizationName = organizationName });
+        var bearer = await CallerAuth.ReadyBootstrapCallerAsync(scenarioContext);
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/iam/tenants");
+        request.Headers.Add("Authorization", bearer);
+        request.Content = JsonContent.Create(new { tenantId = ScopedTenantId(tenantKey), tenantName = tenantDisplayName, initialOrganizationName = organizationName });
+        using var response = await _client.SendAsync(request);
         response.EnsureSuccessStatusCode();
     }
 
@@ -49,7 +50,7 @@ public sealed class AuthorizationFeatureSteps(ScenarioContext scenarioContext)
     {
         _currentTenantKey = tenantKey;
         using var request = new HttpRequestMessage(HttpMethod.Post, "/iam/users");
-        request.Headers.Add(TenantHeaderName, ScopedTenantId(tenantKey));
+        request.Headers.Add("Authorization", await CallerAuth.BearerForAsync(scenarioContext, ScopedTenantId(tenantKey)));
         request.Content = JsonContent.Create(new
         {
             loginName,
@@ -70,7 +71,7 @@ public sealed class AuthorizationFeatureSteps(ScenarioContext scenarioContext)
     {
         _currentTenantKey = tenantKey;
         using var request = new HttpRequestMessage(HttpMethod.Post, "/iam/roles");
-        request.Headers.Add(TenantHeaderName, ScopedTenantId(tenantKey));
+        request.Headers.Add("Authorization", await CallerAuth.BearerForAsync(scenarioContext, ScopedTenantId(tenantKey)));
         request.Content = JsonContent.Create(new { name = roleName, permissions = new[] { permission } });
         using var response = await _client.SendAsync(request);
         response.EnsureSuccessStatusCode();
@@ -102,7 +103,7 @@ public sealed class AuthorizationFeatureSteps(ScenarioContext scenarioContext)
     private async Task AssignAsync(string scopeTenantKey, Guid roleId, Guid userId)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "/iam/roles/assignments");
-        request.Headers.Add(TenantHeaderName, ScopedTenantId(scopeTenantKey));
+        request.Headers.Add("Authorization", await CallerAuth.BearerForAsync(scenarioContext, ScopedTenantId(scopeTenantKey)));
         request.Content = JsonContent.Create(new { userId, roleId });
         using var response = await _client.SendAsync(request);
         _assignmentStatus = (int)response.StatusCode;
@@ -118,7 +119,7 @@ public sealed class AuthorizationFeatureSteps(ScenarioContext scenarioContext)
     public async Task WhenAdminRevokesAssignment()
     {
         using var request = new HttpRequestMessage(HttpMethod.Delete, $"/iam/roles/assignments/{_assignmentId}");
-        request.Headers.Add(TenantHeaderName, ScopedTenantId(_currentTenantKey));
+        request.Headers.Add("Authorization", await CallerAuth.BearerForAsync(scenarioContext, ScopedTenantId(_currentTenantKey)));
         using var response = await _client.SendAsync(request);
         _revokeStatus = (int)response.StatusCode;
         response.EnsureSuccessStatusCode();
@@ -127,7 +128,7 @@ public sealed class AuthorizationFeatureSteps(ScenarioContext scenarioContext)
     private async Task EvaluateAsync(string tenantKey, Guid userId, string permission)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "/iam/authorization/evaluations");
-        request.Headers.Add(TenantHeaderName, ScopedTenantId(tenantKey));
+        request.Headers.Add("Authorization", await CallerAuth.BearerForAsync(scenarioContext, ScopedTenantId(tenantKey)));
         request.Content = JsonContent.Create(new { userId, permission });
         using var response = await _client.SendAsync(request);
         _evaluateStatus = (int)response.StatusCode;

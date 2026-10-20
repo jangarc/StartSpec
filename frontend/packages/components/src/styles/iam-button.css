@@ -1,0 +1,29 @@
+:host {
+  display: inline-block;
+}
+
+button {
+  appearance: none;
+  border: 1px solid var(--iam-color-border);
+  background-color: var(--iam-color-primary);
+  color: var(--iam-color-primary-contrast);
+  border-radius: var(--iam-radius-medium);
+  padding: var(--iam-space-2) var(--iam-space-4);
+  font-size: var(--iam-font-size-body);
+  font-weight: var(--iam-font-weight-semibold);
+  cursor: pointer;
+}
+
+:host([variant='danger']) button {
+  background-color: var(--iam-color-danger);
+}
+
+:host([variant='quiet']) button {
+  background-color: var(--iam-color-surface-muted);
+  color: var(--iam-color-text);
+}
+
+:host([disabled]) button {
+  opacity: 0.45;
+  cursor: default;
+}

@@ -1,0 +1,9 @@
+{
+  "name": "@startspec/theme",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tokens.css": "./src/tokens.css"
+  },
+  "scripts": {}
+}

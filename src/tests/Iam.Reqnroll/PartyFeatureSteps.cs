@@ -19,12 +19,11 @@ namespace Iam.Reqnroll;
 [Binding]
 public sealed class PartyFeatureSteps(ScenarioContext scenarioContext)
 {
-    private const string TenantHeaderName = "X-Tenant-Id";
+    private string? _suffix;
     private static readonly DateOnly AdaDateOfBirth = new(1990, 3, 1);
 
     private readonly IServiceScope _scope = scenarioContext.Get<IServiceScope>();
     private readonly HttpClient _client = scenarioContext.Get<HttpClient>();
-    private string? _suffix;
     private (string TypeCode, string Number) _currentTuple;
     private Guid _currentPartyId;
     private ProvisionPartyResponse? _lastProvision;
@@ -74,9 +73,11 @@ public sealed class PartyFeatureSteps(ScenarioContext scenarioContext)
     [Given(@"^the tenant ""([^""]*)"" is prepared named ""([^""]*)"" with the initial organization ""([^""]*)""$")]
     public async Task GivenTenantIsPrepared(string tenantLabel, string tenantDisplayName, string organizationName)
     {
-        using var response = await _client.PostAsJsonAsync(
-            "/iam/tenants",
-            new { tenantId = ScopedTenantId(tenantLabel), tenantName = tenantDisplayName, initialOrganizationName = organizationName });
+        var bearer = await CallerAuth.ReadyBootstrapCallerAsync(scenarioContext);
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/iam/tenants");
+        request.Headers.Add("Authorization", bearer);
+        request.Content = JsonContent.Create(new { tenantId = ScopedTenantId(tenantLabel), tenantName = tenantDisplayName, initialOrganizationName = organizationName });
+        using var response = await _client.SendAsync(request);
         Assert.Equal(201, (int)response.StatusCode);
     }
 
@@ -123,8 +124,9 @@ public sealed class PartyFeatureSteps(ScenarioContext scenarioContext)
     [When(@"^the caller scoped to tenant ""([^""]*)"" requests party listings$")]
     public async Task WhenCallerRequestsPartyListings(string tenantLabel)
     {
+        var bearer = await CallerAuth.BearerForAsync(scenarioContext, ScopedTenantId(tenantLabel));
         using var request = new HttpRequestMessage(HttpMethod.Get, "/iam/parties");
-        request.Headers.Add(TenantHeaderName, ScopedTenantId(tenantLabel));
+        request.Headers.Add("Authorization", bearer);
         using var response = await _client.SendAsync(request);
         scenarioContext["partyListStatus"] = (int)response.StatusCode;
     }

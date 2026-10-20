@@ -28,9 +28,15 @@ public sealed class PolicyEnforcer : IDisposable
     {
         _roleStores = roleStores;
         _assignmentStores = assignmentStores;
-        _subscription = eventBus.Subscribe<RoleRevoked>((_, _) =>
+        _subscription = eventBus.Subscribe<RoleRevoked>((revoked, _) =>
         {
-            InvalidateAll();
+            // RoleRevoked carries the assignment tenant id in the envelope (role fixed at revocation);
+            // an absent envelope tenant means nothing localized to evict.
+            if (revoked.TenantId is { } tenantId)
+            {
+                Invalidate(tenantId);
+            }
+
             return Task.CompletedTask;
         });
     }
@@ -55,8 +61,8 @@ public sealed class PolicyEnforcer : IDisposable
     /// <summary>撕除單一租戶快照（下次判定重新載入）；冪等。</summary>
     public void Invalidate(string tenantId) => Evict(tenantId);
 
-    /// <summary>Drops every cached snapshot; idempotent and redelivery-safe (RoleRevoked carries no tenant id, so the watch is coarse).</summary>
-    /// <summary>撕除全部快照；冪等、重投遞安全（RoleRevoked 不帶租戶 id，watch 採粗粒度）。</summary>
+    /// <summary>Drops every cached snapshot; idempotent. Kept for composition/teardown sweep use.</summary>
+    /// <summary>撕除全部快照；冪等。保留供組裝／拆除清理使用。</summary>
     public void InvalidateAll() => Evict(null);
 
     private async Task<PolicySnapshot> SnapshotForAsync(string tenantId, CancellationToken cancellationToken)

@@ -1,33 +1,42 @@
 using Microsoft.AspNetCore.Http;
+using SharedKernel.Ports;
 
 namespace Hosts.Base;
 
 /// <summary>
-/// Foundation-slice tenant resolution: member paths under /iam/organizations require a resolvable
-/// scope; requests without one are rejected BEFORE business logic runs (spec identity/tenant).
-/// Interim transport = the HostBase tenant header; the user-auth tasks (4.x) replace it with
-/// resolved identity claims behind the same middleware seam.
-/// 過渡期傳輸＝HostBase 租戶標頭；4.x 以已解析的身分宣告取代，接縫不變。
+/// Tenant scope resolution (foundation slice, design decision 2): every /iam path except the two
+/// auth bootstrap routes carries a Bearer access token; the active tenant resolves from VALIDATED
+/// claims only — a missing or invalid token is ONE uniform 401 before any business logic runs (no
+/// oracle between failure kinds). /iam/auth/sign-in and /iam/auth/refresh are anonymous by spec
+/// shape (the credentials live in the request body).
+/// 範圍中介：除登入／刷新外一律 Bearer；作用中租戶僅自驗證通過的 claims 解析；缺失或無效單一 401。
 /// </summary>
 public sealed class TenantScopeMiddleware(RequestDelegate next)
 {
-    public async Task InvokeAsync(HttpContext context, TenantScope scope)
+    public async Task InvokeAsync(HttpContext context, TenantScope scope, ISessionInspector inspector)
     {
-        if (!context.Request.Path.StartsWithSegments("/iam/organizations"))
+        var path = context.Request.Path;
+        if (!path.StartsWithSegments("/iam")
+            || path.StartsWithSegments("/iam/auth/sign-in")
+            || path.StartsWithSegments("/iam/auth/refresh"))
         {
             await next(context);
             return;
         }
 
-        var tenantId = context.Request.Headers[HostBaseComposition.TenantHeaderName].FirstOrDefault();
-        if (string.IsNullOrWhiteSpace(tenantId))
+        var header = context.Request.Headers.Authorization.FirstOrDefault();
+        var token = header is not null && header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+            ? header["Bearer ".Length..].Trim()
+            : null;
+        var identity = token is null ? null : inspector.Inspect(token);
+        if (identity is null)
         {
             context.Response.StatusCode = 401;
             await context.Response.WriteAsJsonAsync(new { title = "tenant_scope_missing", status = 401 });
             return;
         }
 
-        scope.ActiveTenantId = tenantId.Trim();
+        scope.ActiveTenantId = identity.TenantId;
         await next(context);
     }
 }

@@ -1,0 +1,20 @@
+:root {
+  --iam-color-surface: #ffffff;
+  --iam-color-surface-muted: #f5f6f8;
+  --iam-color-border: #d8dce3;
+  --iam-color-text: #1d2530;
+  --iam-color-text-muted: #5b6470;
+  --iam-color-primary: #2f5cd6;
+  --iam-color-primary-contrast: #ffffff;
+  --iam-color-danger: #c22f35;
+  --iam-radius-small: 4px;
+  --iam-radius-medium: 8px;
+  --iam-space-2: 8px;
+  --iam-space-4: 16px;
+  --iam-space-6: 24px;
+  --iam-font-size-heading: 18px;
+  --iam-font-size-body: 14px;
+  --iam-font-size-caption: 12px;
+  --iam-font-weight-regular: 400;
+  --iam-font-weight-semibold: 600;
+}

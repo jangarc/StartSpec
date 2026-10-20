@@ -21,7 +21,6 @@ public sealed class UserAuthFeatureSteps(ScenarioContext scenarioContext)
 
     private string? _suffix;
     private const string Password = "Correct-Operator-0000";
-    private const string TenantHeaderName = "X-Tenant-Id";
     private readonly Dictionary<string, string> _numberByTenant = new();
     private readonly Dictionary<string, Guid> _userIdByTenant = new();
     private readonly Dictionary<string, Guid> _partyByTenant = new();
@@ -62,9 +61,11 @@ public sealed class UserAuthFeatureSteps(ScenarioContext scenarioContext)
 
     private async Task GivenPreparedTenantForId(string scopedTenant, string tenantDisplayName, string organizationName)
     {
-        using var response = await _client.PostAsJsonAsync(
-            "/iam/tenants",
-            new { tenantId = scopedTenant, tenantName = tenantDisplayName, initialOrganizationName = organizationName });
+        var bearer = await CallerAuth.ReadyBootstrapCallerAsync(scenarioContext);
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/iam/tenants");
+        request.Headers.Add("Authorization", bearer);
+        request.Content = JsonContent.Create(new { tenantId = scopedTenant, tenantName = tenantDisplayName, initialOrganizationName = organizationName });
+        using var response = await _client.SendAsync(request);
         response.EnsureSuccessStatusCode();
     }
 
@@ -99,7 +100,7 @@ public sealed class UserAuthFeatureSteps(ScenarioContext scenarioContext)
     {
         _ = DateOnly.TryParse(dateText, out var dateOfBirth);
         using var request = new HttpRequestMessage(HttpMethod.Post, "/iam/users");
-        request.Headers.Add(TenantHeaderName, scopedTenant);
+        request.Headers.Add("Authorization", await CallerAuth.BearerForAsync(scenarioContext, scopedTenant));
         request.Content = JsonContent.Create(new { loginName, displayName, dateOfBirth, typeCode = "id-card", number });
         using var response = await _client.SendAsync(request);
         var body = await response.Content.ReadAsStringAsync();

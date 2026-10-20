@@ -57,11 +57,25 @@ public sealed class DisableUserUseCaseTests
         Assert.Empty(fixture.Bus.Published);
     }
 
+    [Fact]
+    public async Task Disable_sweeps_all_refresh_families_eagerly()
+    {
+        var fixture = Fixture.WithUser();
+
+        await fixture.UseCase.HandleAsync(new DisableUserCommand(TenantId, LoginName));
+
+        var revocation = Assert.Single(fixture.Families.Revocations);
+        Assert.Equal(TenantId, revocation.TenantId);
+        Assert.Equal(fixture.UserId, revocation.UserId);
+    }
+
     private sealed class Fixture
     {
         public FakeEventBus Bus { get; } = new();
 
         public InMemoryUserStore Store { get; } = new();
+
+        public InMemoryRefreshFamilies Families { get; } = new();
 
         public Guid UserId { get; private set; }
 
@@ -74,8 +88,27 @@ public sealed class DisableUserUseCaseTests
             user.PullDomainEvents();
             fixture.UserId = user.UserId;
             fixture.Store.Save(user);
-            fixture.UseCase = new DisableUserUseCase(new SingleUserStoreScope(fixture.Store), new FakeClock(FixedNow), fixture.Bus);
+            fixture.UseCase = new DisableUserUseCase(new SingleUserStoreScope(fixture.Store), fixture.Families, new FakeClock(FixedNow), fixture.Bus);
             return fixture;
+        }
+    }
+
+    private sealed class InMemoryRefreshFamilies : IRefreshFamilyStore
+    {
+        public List<StoredRevoke> Revocations { get; } = [];
+
+        public readonly record struct StoredRevoke(string TenantId, Guid UserId);
+
+        public Task<StoredRefreshFamily?> FindByTokenShaAsync(string tokenSha256, CancellationToken cancellationToken = default)
+            => Task.FromResult<StoredRefreshFamily?>(null);
+
+        public Task SaveAsync(StoredRefreshFamily family, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task RevokeAllAsync(string tenantId, Guid userId, CancellationToken cancellationToken = default)
+        {
+            Revocations.Add(new StoredRevoke(tenantId, userId));
+            return Task.CompletedTask;
         }
     }
 

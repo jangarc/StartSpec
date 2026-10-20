@@ -52,10 +52,12 @@ public static class IamComposition
         services.AddSingleton<ISignInTimingNormalizer>(
             sp => new MinimumSignInTimingNormalizer(TimeSpan.FromMilliseconds(150), sp.GetRequiredService<IClock>()));
 
+        var signingKey = Encoding.UTF8.GetBytes(jwtSigningKey);
         services.AddSingleton<ITokenIssuer>(sp => new JwtTokenIssuer(
-            Encoding.UTF8.GetBytes(jwtSigningKey),
+            signingKey,
             sp.GetRequiredService<IClock>(),
             TimeSpan.FromMinutes(5))); // JwtTtlMinutes = 5 (design decision 7; deployment-level, not authorization input)
+        services.AddSingleton<ISessionInspector>(new JwtTokenInspector(signingKey));
         services.AddScoped<IRefreshFamilyStore, EfRefreshFamilyStore>();
         services.AddScoped<SignInUseCase>(sp => new SignInUseCase(
             sp.GetRequiredService<IUserCredentialStore>(),

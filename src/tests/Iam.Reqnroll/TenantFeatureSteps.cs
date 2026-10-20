@@ -6,15 +6,14 @@ using Xunit;
 namespace Iam.Reqnroll;
 
 /// <summary>
-/// Step bindings for the tenant API contract scenarios. The caller goes through the real HTTP surface
-/// with the interim HostBase scope transport (X-Tenant-Id header); assertions inspect raw JSON bodies
-/// so wire-format guarantees (uniform 404 bodies, no totals) are checked byte-level, not re-modeled.
+/// Step bindings for the tenant API contract scenarios. The caller signs in over the real HTTP
+/// surface and rides the authenticated session's Bearer (design decision 2: tenant scope resolves
+/// server-side from validated claims); assertions inspect raw JSON bodies so wire-format guarantees
+/// (uniform 404 bodies, no totals) are checked byte-level, not re-modeled.
 /// </summary>
 [Binding]
 public sealed class TenantFeatureSteps(ScenarioContext scenarioContext)
 {
-    private const string TenantHeaderName = "X-Tenant-Id";
-
     private readonly HttpClient _client = scenarioContext.Get<HttpClient>();
 
     private string? _suffix;
@@ -31,9 +30,11 @@ public sealed class TenantFeatureSteps(ScenarioContext scenarioContext)
     public async Task WhenIProvisionATenant(string tenantName, string tenantDisplayName, string organizationName)
     {
         var tenantId = ScopedTenantId(tenantName);
-        using var response = await _client.PostAsJsonAsync(
-            "/iam/tenants",
-            new { tenantId, tenantName = tenantDisplayName, initialOrganizationName = organizationName });
+        var bearer = await CallerAuth.ReadyBootstrapCallerAsync(scenarioContext);
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/iam/tenants");
+        request.Headers.Add("Authorization", bearer);
+        request.Content = JsonContent.Create(new { tenantId, tenantName = tenantDisplayName, initialOrganizationName = organizationName });
+        using var response = await _client.SendAsync(request);
         var body = await response.Content.ReadAsStringAsync();
         scenarioContext["provisionStatus"] = (int)response.StatusCode;
         scenarioContext["provisionBody"] = body;
@@ -49,8 +50,9 @@ public sealed class TenantFeatureSteps(ScenarioContext scenarioContext)
     [When(@"^the caller scoped to tenant ""([^""]*)"" lists organizations$")]
     public async Task WhenTheCallerScopedToTenantListsOrganizations(string tenantName)
     {
+        var bearer = await CallerAuth.BearerForAsync(scenarioContext, ScopedTenantId(tenantName));
         using var request = new HttpRequestMessage(HttpMethod.Get, "/iam/organizations?limit=50");
-        request.Headers.Add(TenantHeaderName, ScopedTenantId(tenantName));
+        request.Headers.Add("Authorization", bearer);
         using var response = await _client.SendAsync(request);
         scenarioContext["listStatus"] = (int)response.StatusCode;
         scenarioContext["listBody"] = await response.Content.ReadAsStringAsync();
@@ -78,8 +80,9 @@ public sealed class TenantFeatureSteps(ScenarioContext scenarioContext)
 
     private async Task<string> ReadOrganizationAsync(string scopedTenantName, Guid organizationId)
     {
+        var bearer = await CallerAuth.BearerForAsync(scenarioContext, ScopedTenantId(scopedTenantName));
         using var request = new HttpRequestMessage(HttpMethod.Get, $"/iam/organizations/{organizationId}");
-        request.Headers.Add(TenantHeaderName, ScopedTenantId(scopedTenantName));
+        request.Headers.Add("Authorization", bearer);
         using var response = await _client.SendAsync(request);
         scenarioContext["readStatus"] = (int)response.StatusCode;
         return await response.Content.ReadAsStringAsync();

@@ -1,0 +1,20 @@
+{
+  "name": "@startspec/app-consumer",
+  "private": true,
+  "type": "module",
+  "packaging": {
+    "targets": ["web"]
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite --port 5176"
+  },
+  "dependencies": {
+    "@startspec/theme": "*",
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.0",
+    "vite": "^7.0.0"
+  }
+}

@@ -12,9 +12,6 @@ namespace Hosts.Base;
 /// </summary>
 public static class HostBaseComposition
 {
-    /// <summary>Foundation-slice tenant scope transport; the user-auth tasks (4.x) replace it with resolved identity claims.</summary>
-    public const string TenantHeaderName = "X-Tenant-Id";
-
     public static IServiceCollection AddHostBase(this IServiceCollection services)
     {
         services.AddScoped<TenantScope>();
