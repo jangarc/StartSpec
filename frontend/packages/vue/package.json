@@ -10,14 +10,15 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@startspec/components": "*",
-    "@startspec/theme": "*",
+    "@startspec/components": "workspace:*",
+    "@startspec/theme": "workspace:*",
     "vue": "^3.5.0"
   },
   "devDependencies": {
     "@vue/test-utils": "^2.4.0",
     "happy-dom": "^18.0.0",
     "typescript": "^5.6.0",
-    "vitest": "^3.0.0"
+    "vitest": "^3.0.0",
+    "@vitejs/plugin-vue": "^6.0.0"
   }
 }

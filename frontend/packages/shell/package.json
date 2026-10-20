@@ -8,9 +8,9 @@
   },
   "scripts": {},
   "dependencies": {
-    "@startspec/components": "*",
-    "@startspec/domain": "*",
-    "@startspec/theme": "*"
+    "@startspec/components": "workspace:*",
+    "@startspec/domain": "workspace:*",
+    "@startspec/theme": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.6.0"

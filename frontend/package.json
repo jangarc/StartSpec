@@ -1,23 +1,24 @@
 {
   "name": "iam-frontend-workspace",
   "private": true,
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
+    "build": "pnpm -r --if-present run build",
+    "test": "pnpm -r --if-present run test",
     "typecheck": "vue-tsc --noEmit -p packages/vue/tsconfig.json && vue-tsc --noEmit -p packages/domain/tsconfig.json && vue-tsc --noEmit -p packages/components/tsconfig.json && vue-tsc --noEmit -p apps/hq/tsconfig.json && vue-tsc --noEmit -p apps/store/tsconfig.json && vue-tsc --noEmit -p apps/consumer/tsconfig.json",
     "lint": "eslint . && stylelint packages/theme/src/**/*.css packages/components/src/**/*.css apps/*/src/**/*.css --ignore-path .gitignore --allow-empty-input --config stylelint.config.mjs"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.3.3",
     "eslint": "^10.13.0",
     "eslint-plugin-vue": "^10.11.1",
     "stylelint": "^16.26.1",
-    "tailwindcss": "^4.3.3",
     "typescript-eslint": "^8.71.2",
-    "vue-tsc": "^3.3.13"
+    "vue-tsc": "^3.3.13",
+    "vue-eslint-parser": "^10.4.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }
